@@ -1,0 +1,7 @@
+{
+    "unraid-adapter adapter settings": "Adaptereinstellungen für unraid-adapter",
+    "baseUrl": "Unraid IP/URL",
+    "baseUrl_help": "Beispiel: https://tower.local oder http://192.168.1.10 (inkl. Protokoll und ggf. Port)",
+    "apiToken": "API-Token",
+    "apiToken_help": "Token im Unraid-Webinterface erzeugen und hier einfügen"
+}

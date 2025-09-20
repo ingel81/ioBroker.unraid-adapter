@@ -1,0 +1,85 @@
+{
+    "common": {
+        "name": "unraid-adapter",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "uk": "Початкова версія",
+                "zh-cn": "首次出版"
+            }
+        },
+        "titleLang": {
+            "en": "Unraid",
+            "de": "Unraid",
+            "ru": "Не влетел из -за",
+            "pt": "Sem medo",
+            "nl": "Niet",
+            "fr": "Se détendre",
+            "it": "Non corretto",
+            "es": "Sin identificación",
+            "pl": "URAID",
+            "uk": "Безпідставний",
+            "zh-cn": "无关"
+        },
+        "desc": {
+            "en": "unraid-adapter",
+            "de": "Unraid-Adapter",
+            "ru": "Адаптер",
+            "pt": "UNARAD-ADAPTER",
+            "nl": "niet-adapter",
+            "fr": "adaptateur non",
+            "it": "Adattatore non corretto",
+            "es": "adaptador sin identificación",
+            "pl": "Adraid-adapter",
+            "uk": "бездоганний адаптер",
+            "zh-cn": "无关的适配器"
+        },
+        "authors": ["ingel81 <ingel81@sgeht.net>"],
+        "keywords": ["ioBroker", "template", "Smart Home", "home automation"],
+        "licenseInformation": {
+            "type": "free",
+            "license": "MIT"
+        },
+        "platform": "Javascript/Node.js",
+        "icon": "unraid-adapter.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/ingel81/ioBroker.unraid-adapter/master/admin/unraid-adapter.png",
+        "readme": "https://github.com/ingel81/ioBroker.unraid-adapter/blob/master/README.md",
+        "loglevel": "info",
+        "tier": 3,
+        "mode": "daemon",
+        "type": "infrastructure",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "materialize"
+        },
+        "eraseOnUpload": true,
+        "dependencies": [
+            {
+                "js-controller": ">=6.0.11"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": "7.0.23"
+            }
+        ]
+    },
+    "native": {
+        "baseUrl": "",
+        "apiToken": ""
+    },
+    "objects": [],
+    "instanceObjects": []
+}
