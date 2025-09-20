@@ -56,9 +56,9 @@
     "react": "^17.0.2",
     "sinon": "^21.0.0",
     "sinon-chai": "^3.7.0",
-    "typescript": "~5.0.4"
+    "typescript": "^5.7.2"
   },
-  "main": "main.js",
+  "main": "build/main.js",
   "files": [
     "admin{,/!(src)/**}/!(tsconfig|tsconfig.*|.eslintrc).{json,json5}",
     "admin{,/!(src)/**}/*.{html,css,png,svg,jpg,js}",
@@ -67,11 +67,12 @@
     "www/",
     "io-package.json",
     "LICENSE",
-    "main.js"
+    "build/"
   ],
   "scripts": {
     "prebuild": "rimraf admin/build",
-    "build": "build-adapter react",
+    "build": "npm run build:ts && build-adapter react",
+    "build:ts": "tsc -p tsconfig.build.json",
     "watch": "build-adapter react --watch",
     "prebuild:react": "rimraf admin/build",
     "build:react": "build-adapter react",
