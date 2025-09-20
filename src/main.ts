@@ -48,7 +48,7 @@ class UnraidAdapter extends Adapter {
     private onUnload(callback: () => void): void {
         try {
             callback();
-        } catch (e) {
+        } catch {
             callback();
         }
     }

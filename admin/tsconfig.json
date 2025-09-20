@@ -8,9 +8,11 @@
         "sourceMap": true,
         "sourceRoot": "./src",
         "noImplicitAny": false,
-        "lib": ["es2018", "DOM"],
+        "allowJs": false,
+        "checkJs": false,
+        "lib": ["ES2018", "DOM"],
         "jsx": "react"
     },
-    "include": ["./**/*.d.ts", "./**/*.jsx", "../lib/adapter-config.d.ts"],
-    "exclude": ["./**/*.test.jsx"]
+    "include": ["./**/*.d.ts", "./**/*.ts", "./**/*.tsx", "../lib/adapter-config.d.ts"],
+    "exclude": ["./**/*.test.ts", "./**/*.test.tsx"]
 }

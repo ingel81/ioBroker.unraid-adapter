@@ -23,4 +23,11 @@ declare module '@iobroker/adapter-react/i18n' {
      * @param args Optional arguments which will replace the first (second, third, ...) occurence of %s
      */
     function t(word: AdminWord, ...args: string[]): string;
+
+    /**
+     * Extend translations for languages that are not part of the default bundle.
+     * @param words Additional translations.
+     * @param lang Language identifier.
+     */
+    function extendTranslations(words: Record<string, string>, lang: ioBroker.Languages | string): void;
 }
