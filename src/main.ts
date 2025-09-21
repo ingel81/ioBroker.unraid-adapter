@@ -215,6 +215,36 @@ class UnraidAdapter extends Adapter {
         }
         this.selectedDefinitions = definitions;
         this.staticObjectIds = this.collectStaticObjectIds(definitions);
+
+        // Reset dynamic tracking for deselected domains
+        if (!this.effectiveSelection.has('metrics.cpu')) {
+            this.cpuCoresDetected = false;
+            this.cpuCoreCount = 0;
+        }
+
+        if (!this.effectiveSelection.has('array.disks') &&
+            !this.effectiveSelection.has('array.parities') &&
+            !this.effectiveSelection.has('array.caches')) {
+            this.arrayDisksDetected = false;
+            this.diskCount = 0;
+            this.parityCount = 0;
+            this.cacheCount = 0;
+        }
+
+        if (!this.effectiveSelection.has('docker.containers')) {
+            this.dockerContainersDetected = false;
+            this.containerNames.clear();
+        }
+
+        if (!this.effectiveSelection.has('shares.list')) {
+            this.sharesDetected = false;
+            this.shareNames.clear();
+        }
+
+        if (!this.effectiveSelection.has('vms.list')) {
+            this.vmsDetected = false;
+            this.vmUuids.clear();
+        }
     }
 
     private collectStaticObjectIds(definitions: readonly DomainDefinition[]): Set<string> {
@@ -375,20 +405,32 @@ class UnraidAdapter extends Adapter {
     }
 
     private async applyData(data: QueryResult): Promise<void> {
-        // Check for CPU cores and create states dynamically if needed
-        await this.handleDynamicCpuCores(data);
+        // Only check for CPU cores if metrics.cpu is selected
+        if (this.effectiveSelection.has('metrics.cpu')) {
+            await this.handleDynamicCpuCores(data);
+        }
 
-        // Check for array disks and create states dynamically if needed
-        await this.handleDynamicArrayDisks(data);
+        // Only check for array disks if any array disk domain is selected
+        if (this.effectiveSelection.has('array.disks') ||
+            this.effectiveSelection.has('array.parities') ||
+            this.effectiveSelection.has('array.caches')) {
+            await this.handleDynamicArrayDisks(data);
+        }
 
-        // Check for docker containers and create states dynamically if needed
-        await this.handleDynamicDockerContainers(data);
+        // Only check for docker containers if docker.containers is selected
+        if (this.effectiveSelection.has('docker.containers')) {
+            await this.handleDynamicDockerContainers(data);
+        }
 
-        // Check for shares and create states dynamically if needed
-        await this.handleDynamicShares(data);
+        // Only check for shares if shares.list is selected
+        if (this.effectiveSelection.has('shares.list')) {
+            await this.handleDynamicShares(data);
+        }
 
-        // Check for VMs and create states dynamically if needed
-        await this.handleDynamicVms(data);
+        // Only check for VMs if vms.list is selected
+        if (this.effectiveSelection.has('vms.list')) {
+            await this.handleDynamicVms(data);
+        }
 
         for (const definition of this.selectedDefinitions) {
             await this.applyDefinition(definition, data);
@@ -404,7 +446,11 @@ class UnraidAdapter extends Adapter {
     }
 
     private async handleDynamicCpuCores(data: QueryResult): Promise<void> {
-        // Only process CPU cores if metrics.cpu is selected and data is available
+        // Only process CPU cores if metrics.cpu is selected
+        if (!this.effectiveSelection.has('metrics.cpu')) {
+            return;
+        }
+
         const metrics = data.metrics as { cpu?: { cpus?: unknown[] } };
         if (!metrics?.cpu?.cpus) {
             return;
@@ -468,7 +514,16 @@ class UnraidAdapter extends Adapter {
     }
 
     private async handleDynamicArrayDisks(data: QueryResult): Promise<void> {
-        // Only process array data if array domains are selected
+        // Check if any array disk domains are selected
+        const hasDisks = this.effectiveSelection.has('array.disks');
+        const hasParities = this.effectiveSelection.has('array.parities');
+        const hasCaches = this.effectiveSelection.has('array.caches');
+
+        // Skip if no array disk domains are selected
+        if (!hasDisks && !hasParities && !hasCaches) {
+            return;
+        }
+
         const array = data.array as {
             disks?: unknown[];
             parities?: unknown[];
@@ -478,55 +533,55 @@ class UnraidAdapter extends Adapter {
             return;
         }
 
-        const disks = Array.isArray(array.disks) ? array.disks : [];
-        const parities = Array.isArray(array.parities) ? array.parities : [];
-        const caches = Array.isArray(array.caches) ? array.caches : [];
+        const disks = hasDisks && Array.isArray(array.disks) ? array.disks : [];
+        const parities = hasParities && Array.isArray(array.parities) ? array.parities : [];
+        const caches = hasCaches && Array.isArray(array.caches) ? array.caches : [];
 
-        const diskCount = disks.length;
-        const parityCount = parities.length;
-        const cacheCount = caches.length;
+        const diskCount = hasDisks ? disks.length : this.diskCount;
+        const parityCount = hasParities ? parities.length : this.parityCount;
+        const cacheCount = hasCaches ? caches.length : this.cacheCount;
 
         // Create or update disk states if needed
         if (!this.arrayDisksDetected ||
-            this.diskCount !== diskCount ||
-            this.parityCount !== parityCount ||
-            this.cacheCount !== cacheCount) {
+            (hasDisks && this.diskCount !== diskCount) ||
+            (hasParities && this.parityCount !== parityCount) ||
+            (hasCaches && this.cacheCount !== cacheCount)) {
 
-            this.diskCount = diskCount;
-            this.parityCount = parityCount;
-            this.cacheCount = cacheCount;
+            if (hasDisks) this.diskCount = diskCount;
+            if (hasParities) this.parityCount = parityCount;
+            if (hasCaches) this.cacheCount = cacheCount;
             this.arrayDisksDetected = true;
 
             this.log.info(`Detected array configuration: ${diskCount} data disks, ${parityCount} parity disks, ${cacheCount} cache disks`);
 
-            // Create count states
-            if (this.effectiveSelection.has('array.disks')) {
+            // Create count states only for selected domains
+            if (hasDisks) {
                 await this.writeState('array.disks.count',
                     { type: 'number', role: 'value', unit: '' }, diskCount);
                 await this.createDiskStates('array.disks', disks);
             }
 
-            if (this.effectiveSelection.has('array.parities')) {
+            if (hasParities) {
                 await this.writeState('array.parities.count',
                     { type: 'number', role: 'value', unit: '' }, parityCount);
                 await this.createDiskStates('array.parities', parities);
             }
 
-            if (this.effectiveSelection.has('array.caches')) {
+            if (hasCaches) {
                 await this.writeState('array.caches.count',
                     { type: 'number', role: 'value', unit: '' }, cacheCount);
                 await this.createDiskStates('array.caches', caches);
             }
         }
 
-        // Update disk values
-        if (this.effectiveSelection.has('array.disks')) {
+        // Update disk values only for selected domains
+        if (hasDisks && disks.length > 0) {
             await this.updateDiskValues('array.disks', disks);
         }
-        if (this.effectiveSelection.has('array.parities')) {
+        if (hasParities && parities.length > 0) {
             await this.updateDiskValues('array.parities', parities);
         }
-        if (this.effectiveSelection.has('array.caches')) {
+        if (hasCaches && caches.length > 0) {
             await this.updateDiskValues('array.caches', caches);
         }
     }
@@ -738,13 +793,19 @@ class UnraidAdapter extends Adapter {
             }
         }
 
-        // Update container values
+        // Update container values - only for containers we're tracking
         for (const container of containers) {
             const c = container as Record<string, unknown>;
             const names = c.names as string[] | null;
             if (!names || !Array.isArray(names) || names.length === 0) continue;
 
             const name = names[0].replace(/^\//, '');
+
+            // Only update if we're still tracking this container
+            if (!this.containerNames.has(name)) {
+                continue;
+            }
+
             const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
             await this.setStateAsync(`${containerPrefix}.name`,
@@ -826,11 +887,16 @@ class UnraidAdapter extends Adapter {
             }
         }
 
-        // Update share values
+        // Update share values - only for shares we're tracking
         for (const share of shares) {
             const s = share as Record<string, unknown>;
             const name = s.name as string | null;
             if (!name) continue;
+
+            // Only update if we're still tracking this share
+            if (!this.shareNames.has(name)) {
+                continue;
+            }
 
             const sharePrefix = `shares.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
@@ -919,12 +985,17 @@ class UnraidAdapter extends Adapter {
             }
         }
 
-        // Update VM values
+        // Update VM values - only for VMs we're tracking
         for (const vm of domains) {
             const v = vm as Record<string, unknown>;
             const name = v.name as string | null;
             const uuid = v.uuid as string | null;
             if (!name || !uuid) continue;
+
+            // Only update if we're still tracking this VM
+            if (!this.vmUuids.has(uuid)) {
+                continue;
+            }
 
             const vmPrefix = `vms.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
@@ -1120,23 +1191,39 @@ class UnraidAdapter extends Adapter {
 
     private onUnload(callback: () => void): void {
         this.stopRequested = true;
+
         try {
+            // Clear the poll timer immediately
             if (this.pollTimer) {
                 this.clearTimeout(this.pollTimer);
+                this.pollTimer = undefined;
             }
+
+            // Stop subscriptions if active (fire and forget)
             if (this.subscriptionManager) {
-                void this.subscriptionManager.stop().catch((error) => {
-                    this.log.warn(`Failed to stop subscriptions: ${this.describeError(error)}`);
-                });
+                this.subscriptionManager.stop()
+                    .catch((error) => {
+                        this.log.warn(`Failed to stop subscriptions: ${this.describeError(error)}`);
+                    });
+                this.subscriptionManager = undefined;
             }
+
+            // Dispose Apollo client (fire and forget)
             if (this.apolloClient) {
-                void this.apolloClient.dispose().catch((error) => {
-                    this.log.warn(`Failed to dispose Apollo client: ${this.describeError(error)}`);
-                });
+                this.apolloClient.dispose()
+                    .catch((error) => {
+                        this.log.warn(`Failed to dispose Apollo client: ${this.describeError(error)}`);
+                    });
+                this.apolloClient = undefined;
             }
-        } finally {
-            callback();
+
+            this.log.debug('Adapter cleanup initiated');
+        } catch (error) {
+            this.log.error(`Error during adapter cleanup: ${this.describeError(error)}`);
         }
+
+        // Call callback immediately to signal we're done
+        callback();
     }
 }
 
