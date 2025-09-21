@@ -23,12 +23,14 @@ const styles = (theme: any) =>
         tab: {
             maxWidth: 800,
             padding: 16,
+            color: theme.palette.text.primary,
         },
         section: {
             marginBottom: 24,
         },
         sectionHeader: {
             marginBottom: 8,
+            color: theme.palette.type === 'dark' ? theme.palette.text.primary : 'inherit',
         },
         input: {
             marginTop: 0,
@@ -75,6 +77,7 @@ const styles = (theme: any) =>
         },
         treeLabel: {
             flexGrow: 1,
+            color: theme.palette.type === 'dark' ? theme.palette.text.primary : 'inherit',
         },
         treeChildren: {
             marginLeft: 28,
@@ -82,6 +85,7 @@ const styles = (theme: any) =>
         treeDescription: {
             marginLeft: 36,
             marginBottom: 8,
+            color: theme.palette.type === 'dark' ? theme.palette.text.secondary : 'inherit',
         },
     });
 
