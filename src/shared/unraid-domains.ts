@@ -11,7 +11,10 @@ export type DomainId =
     | 'info.time'
     | 'info.os'
     | 'server'
-    | 'server.status';
+    | 'server.status'
+    | 'metrics'
+    | 'metrics.cpu'
+    | 'metrics.memory';
 
 export interface FieldSpec {
     name: string;
@@ -65,6 +68,22 @@ const domainTreeDefinition: readonly DomainNode[] = [
             {
                 id: 'server.status',
                 label: 'domains.server.status',
+                defaultSelected: true,
+            },
+        ],
+    },
+    {
+        id: 'metrics',
+        label: 'domains.metrics',
+        children: [
+            {
+                id: 'metrics.cpu',
+                label: 'domains.metrics.cpu',
+                defaultSelected: true,
+            },
+            {
+                id: 'metrics.memory',
+                label: 'domains.metrics.memory',
                 defaultSelected: true,
             },
         ],
@@ -230,7 +249,101 @@ const domainDefinitionsList: readonly DomainDefinition[] = [
             },
         ],
     },
+    {
+        id: 'metrics.cpu',
+        selection: [
+            {
+                root: 'metrics',
+                fields: [
+                    {
+                        name: 'cpu',
+                        selection: [{ name: 'percentTotal' }],
+                    },
+                ],
+            },
+        ],
+        states: [
+            {
+                id: 'metrics.cpu.percentTotal',
+                path: ['metrics', 'cpu', 'percentTotal'],
+                common: { type: 'number', role: 'value.percent', unit: '%' },
+                transform: numberOrNull,
+            },
+        ],
+    },
+    {
+        id: 'metrics.memory',
+        selection: [
+            {
+                root: 'metrics',
+                fields: [
+                    {
+                        name: 'memory',
+                        selection: [
+                            { name: 'percentTotal' },
+                            { name: 'total' },
+                            { name: 'used' },
+                            { name: 'free' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+            {
+                id: 'metrics.memory.percentTotal',
+                path: ['metrics', 'memory', 'percentTotal'],
+                common: { type: 'number', role: 'value.percent', unit: '%' },
+                transform: numberOrNull,
+            },
+            {
+                id: 'metrics.memory.totalGb',
+                path: ['metrics', 'memory', 'total'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.usedGb',
+                path: ['metrics', 'memory', 'used'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.freeGb',
+                path: ['metrics', 'memory', 'free'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+        ],
+    },
 ];
+
+function numberOrNull(value: unknown): number | null {
+    if (value === null || value === undefined) {
+        return null;
+    }
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : null;
+    }
+    if (typeof value === 'string') {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+    if (typeof value === 'bigint') {
+        const num = Number(value);
+        return Number.isFinite(num) ? num : null;
+    }
+    return null;
+}
+
+function bytesToGigabytes(value: unknown): number | null {
+    const numeric = numberOrNull(value);
+    if (numeric === null) {
+        return null;
+    }
+    const gigabytes = numeric / (1024 * 1024 * 1024);
+    return Number.isFinite(gigabytes) ? gigabytes : null;
+}
 
 export const domainDefinitions = domainDefinitionsList;
 

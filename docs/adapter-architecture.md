@@ -36,6 +36,8 @@ Aktuell gepflegte Domänen:
 | `info.time`     | Aktuelle Systemzeit                                | ✔︎        |
 | `info.os`       | Betriebssystem-Infos (Distribution, Release, Kernel) |          |
 | `server.status` | Server-Basisdaten (Name, Status, LAN/WAN-IP, URLs) | ✔︎        |
+| `metrics.cpu`   | CPU-Auslastung (gesamt in Prozent)                  | ✔︎        |
+| `metrics.memory`| Arbeitsspeicher (Prozent, total/used/free in GByte) | ✔︎        |
 
 **Wichtig:** Ein Domäneneintrag steht für ein „Datenpaket“. So liefert `server.status` bewusst mehrere States (`name`, `status`, `lanip`, …). Dadurch bleibt die Admin-UI schlank und wir haben die volle Kontrolle über die Struktur.
 

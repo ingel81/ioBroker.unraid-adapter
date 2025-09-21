@@ -83,7 +83,9 @@
         "allowSelfSigned": false,
         "enabledDomains": [
             "info.time",
-            "server.status"
+            "server.status",
+            "metrics.cpu",
+            "metrics.memory"
         ]
     },
     "objects": [],
