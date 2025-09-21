@@ -6,7 +6,10 @@
 *.code-workspace
 node_modules
 nbproject
+# Build directory - main.js is tracked for ioBroker distribution
 build/
+!build/main.js
+!build/main.js.map
 # prebuilt admin bundle stays tracked intentionally
 # admin/build/
 
