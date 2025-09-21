@@ -10,9 +10,10 @@
   "license": "MIT",
   "keywords": [
     "ioBroker",
-    "template",
     "Smart Home",
-    "home automation"
+    "home automation",
+    "unraid",
+    "monitoring"
   ],
   "repository": {
     "type": "git",
