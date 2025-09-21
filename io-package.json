@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unraid-adapter",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "news": {
+      "0.2.1": {
+        "en": "Release testing with npm, reloaded",
+        "de": "Versionstests mit npm, neu gestartet",
+        "ru": "Тестирование релиза с использованием npm, перезагружено",
+        "pt": "Teste de lançamento com npm, recarregado",
+        "nl": "Release testen met npm, opnieuw opgestart",
+        "fr": "Test de publication avec npm, rechargé",
+        "it": "Test di rilascio con npm, ricaricato",
+        "es": "Pruebas de lanzamiento con npm, recargadas",
+        "pl": "Testowanie wydania za pomocą npm, ponownie wykonane",
+        "uk": "Тестування релізу з використанням npm, перезавантажено",
+        "zh-cn": "重新加载npm的发布测试"
+      },
       "0.2.0": {
         "en": "Release testing with npm",
         "de": "Tests für die Version mit npm durchführen",
