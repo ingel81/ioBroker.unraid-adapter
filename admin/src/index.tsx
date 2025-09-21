@@ -16,7 +16,7 @@ const renderApp = (): void => {
     ReactDOM.render(
         <MuiThemeProvider theme={theme(themeName)}>
             <App
-                adapterName="unraid-adapter"
+                adapterName="unraid"
                 onThemeChange={(nextTheme: string) => {
                     themeName = nextTheme;
                     renderApp();

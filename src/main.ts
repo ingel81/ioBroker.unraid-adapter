@@ -131,7 +131,7 @@ class UnraidAdapter extends Adapter {
     public constructor(options: Partial<AdapterOptions> = {}) {
         super({
             ...options,
-            name: 'unraid-adapter',
+            name: 'unraid',
         });
 
         this.on('ready', this.onReady.bind(this));

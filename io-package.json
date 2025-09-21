@@ -1,6 +1,6 @@
 {
   "common": {
-    "name": "unraid-adapter",
+    "name": "unraid",
     "version": "0.3.0",
     "news": {
       "0.3.0": {
@@ -44,8 +44,8 @@
       "zh-cn": "无关"
     },
     "desc": {
-      "en": "unraid-adapter",
-      "de": "Unraid-Adapter",
+      "en": "Monitor and control Unraid servers",
+      "de": "Überwachung und Steuerung von Unraid-Servern",
       "ru": "Адаптер",
       "pt": "UNARAD-ADAPTER",
       "nl": "niet-adapter",
@@ -69,10 +69,10 @@
       "license": "MIT"
     },
     "platform": "Javascript/Node.js",
-    "icon": "unraid-adapter.png",
+    "icon": "unraid.png",
     "enabled": true,
-    "extIcon": "https://raw.githubusercontent.com/ingel81/ioBroker.unraid-adapter/master/admin/unraid-adapter.png",
-    "readme": "https://github.com/ingel81/ioBroker.unraid-adapter/blob/master/README.md",
+    "extIcon": "https://raw.githubusercontent.com/ingel81/ioBroker.unraid/master/admin/unraid.png",
+    "readme": "https://github.com/ingel81/ioBroker.unraid/blob/master/README.md",
     "loglevel": "info",
     "tier": 3,
     "mode": "daemon",

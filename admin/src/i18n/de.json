@@ -1,5 +1,5 @@
 {
-    "unraid-adapter adapter settings": "Adapter-Einstellungen für unraid-adapter",
+    "unraid adapter settings": "Adapter-Einstellungen für unraid",
     "baseUrl": "Unraid IP/URL",
     "baseUrl_help": "Beispiel: https://tower.local oder http://192.168.1.10 (Protokoll und Port falls erforderlich angeben)",
     "apiToken": "API-Token",

@@ -1,5 +1,5 @@
 {
-    "unraid-adapter adapter settings": "unraid-adapter 适配器设置",
+    "unraid adapter settings": "unraid 适配器设置",
     "baseUrl": "Unraid IP/URL",
     "baseUrl_help": "示例：https://tower.local 或 http://192.168.1.10 （如需要请包含协议和端口）",
     "apiToken": "API 令牌",

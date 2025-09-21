@@ -1,15 +1,15 @@
-![Logo](admin/unraid-adapter.png)
+![Logo](admin/unraid.png)
 
-# ioBroker.unraid-adapter
+# ioBroker.unraid
 
-[![NPM version](https://img.shields.io/npm/v/iobroker.unraid-adapter.svg)](https://www.npmjs.com/package/iobroker.unraid-adapter)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.unraid-adapter.svg)](https://www.npmjs.com/package/iobroker.unraid-adapter)
-![Number of Installations](https://iobroker.live/badges/unraid-adapter-installed.svg)
-![Current version in stable repository](https://iobroker.live/badges/unraid-adapter-stable.svg)
+[![NPM version](https://img.shields.io/npm/v/iobroker.unraid.svg)](https://www.npmjs.com/package/iobroker.unraid)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.unraid.svg)](https://www.npmjs.com/package/iobroker.unraid)
+![Number of Installations](https://iobroker.live/badges/unraid-installed.svg)
+![Current version in stable repository](https://iobroker.live/badges/unraid-stable.svg)
 
-[![NPM](https://nodei.co/npm/iobroker.unraid-adapter.png?downloads=true)](https://nodei.co/npm/iobroker.unraid-adapter/)
+[![NPM](https://nodei.co/npm/iobroker.unraid.png?downloads=true)](https://nodei.co/npm/iobroker.unraid/)
 
-**Tests:** ![Test and Release](https://github.com/ingel81/ioBroker.unraid-adapter/workflows/Test%20and%20Release/badge.svg)
+**Tests:** ![Test and Release](https://github.com/ingel81/ioBroker.unraid/workflows/Test%20and%20Release/badge.svg)
 
 ## unraid adapter for ioBroker
 

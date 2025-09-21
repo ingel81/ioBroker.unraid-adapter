@@ -89,7 +89,7 @@ class UnraidAdapter extends adapter_core_1.Adapter {
     constructor(options = {}) {
         super({
             ...options,
-            name: 'unraid-adapter',
+            name: 'unraid',
         });
         this.on('ready', this.onReady.bind(this));
         this.on('unload', this.onUnload.bind(this));

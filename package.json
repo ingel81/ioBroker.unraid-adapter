@@ -1,12 +1,12 @@
 {
-  "name": "iobroker.unraid-adapter",
+  "name": "iobroker.unraid",
   "version": "0.3.0",
-  "description": "unraid-adapter",
+  "description": "Monitor and control Unraid servers via GraphQL API",
   "author": {
     "name": "ingel81",
     "email": "ingel81@sgeht.net"
   },
-  "homepage": "https://github.com/ingel81/ioBroker.unraid-adapter",
+  "homepage": "https://github.com/ingel81/ioBroker.unraid",
   "license": "MIT",
   "keywords": [
     "ioBroker",
@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:ingel81/ioBroker.unraid-adapter.git"
+    "url": "git@github.com:ingel81/ioBroker.unraid.git"
   },
   "engines": {
     "node": ">= 22"
@@ -92,7 +92,7 @@
     "release": "release-script"
   },
   "bugs": {
-    "url": "https://github.com/ingel81/ioBroker.unraid-adapter/issues"
+    "url": "https://github.com/ingel81/ioBroker.unraid/issues"
   },
   "readmeFilename": "README.md"
 }

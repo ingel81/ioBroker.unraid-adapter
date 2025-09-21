@@ -1,7 +1,7 @@
 {
     "cli": true,
     "target": "directory",
-    "adapterName": "unraid-adapter",
+    "adapterName": "unraid",
     "title": "Unraid",
     "expert": "yes",
     "features": ["adapter"],
