@@ -1,7 +1,11 @@
 // Specialized tsconfig for type-checking js files
 {
     "extends": "./tsconfig.json",
-    "compilerOptions": {},
-    "include": ["**/*.js", "**/*.d.ts"],
+    "compilerOptions": {
+        "jsx": "react",
+        "lib": ["ES2018", "DOM"],
+        "allowJs": true
+    },
+    "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.d.ts"],
     "exclude": ["**/build", "node_modules/", "widgets/"]
 }

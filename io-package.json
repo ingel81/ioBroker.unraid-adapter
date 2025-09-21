@@ -72,13 +72,21 @@
         ],
         "globalDependencies": [
             {
-                "admin": "7.0.23"
+                "admin": ">=6.0.0"
             }
         ]
     },
     "native": {
         "baseUrl": "",
-        "apiToken": ""
+        "apiToken": "",
+        "pollIntervalSeconds": 60,
+        "allowSelfSigned": false,
+        "enabledDomains": [
+            "info.time",
+            "server.status",
+            "metrics.cpu",
+            "metrics.memory"
+        ]
     },
     "objects": [],
     "instanceObjects": []

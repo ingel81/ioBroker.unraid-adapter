@@ -6,6 +6,9 @@
 *.code-workspace
 node_modules
 nbproject
+build/
+# prebuilt admin bundle stays tracked intentionally
+# admin/build/
 
 # npm package files
 iobroker.*.tgz

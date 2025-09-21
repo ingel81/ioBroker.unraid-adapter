@@ -1,0 +1,15 @@
+{
+    "extends": "@tsconfig/node22/tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "src",
+        "outDir": "build",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "resolveJsonModule": true,
+        "noEmit": false,
+        "allowJs": false
+    },
+    "include": ["src/**/*.ts", "lib/**/*.d.ts"],
+    "exclude": ["build", "node_modules", "admin/src"]
+}

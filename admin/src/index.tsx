@@ -7,19 +7,24 @@ import App from './app';
 
 let themeName = Utils.getThemeName();
 
-function build() {
+const renderApp = (): void => {
+    const rootElement = document.getElementById('root');
+    if (!rootElement) {
+        throw new Error('root element not found');
+    }
+
     ReactDOM.render(
         <MuiThemeProvider theme={theme(themeName)}>
             <App
                 adapterName="unraid-adapter"
-                onThemeChange={(_theme) => {
-                    themeName = _theme;
-                    build();
+                onThemeChange={(nextTheme: string) => {
+                    themeName = nextTheme;
+                    renderApp();
                 }}
             />
         </MuiThemeProvider>,
-        document.getElementById('root'),
+        rootElement,
     );
-}
+};
 
-build();
+renderApp();
