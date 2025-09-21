@@ -363,6 +363,23 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                         {I18n.t('section.polling')}
                     </Typography>
                     {this.renderPollInterval()}
+                    {/* Subscription support temporarily disabled due to Unraid API issues
+                    <div className={classes.controlElement}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    color="primary"
+                                    checked={!!native.useSubscriptions}
+                                    onChange={(event, checked) => this.props.onChange('useSubscriptions', checked)}
+                                />
+                            }
+                            label={I18n.t('useSubscriptions')}
+                        />
+                        <Typography variant="caption" color="textSecondary" style={{ display: 'block', marginLeft: 32 }}>
+                            {I18n.t('useSubscriptions_help')}
+                        </Typography>
+                    </div>
+                    */}
                 </div>
 
                 <Divider />

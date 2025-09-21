@@ -22,8 +22,12 @@
     "node": ">= 22"
   },
   "dependencies": {
+    "@apollo/client": "^3.11.0",
     "@iobroker/adapter-core": "^3.3.2",
-    "undici": "^5.29.0"
+    "graphql": "^16.9.0",
+    "graphql-ws": "^5.16.0",
+    "undici": "^5.29.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^3.8.0",
@@ -44,6 +48,7 @@
     "@types/react-dom": "^17.0.26",
     "@types/sinon": "^17.0.4",
     "@types/sinon-chai": "^3.2.12",
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
     "chai": "^4.5.0",

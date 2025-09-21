@@ -44,6 +44,65 @@ const domainTreeDefinition = [
             },
         ],
     },
+    {
+        id: 'array',
+        label: 'domains.array',
+        children: [
+            {
+                id: 'array.status',
+                label: 'domains.array.status',
+                defaultSelected: true,
+            },
+            {
+                id: 'array.disks',
+                label: 'domains.array.disks',
+                defaultSelected: true,
+            },
+            {
+                id: 'array.parities',
+                label: 'domains.array.parities',
+                defaultSelected: false,
+            },
+            {
+                id: 'array.caches',
+                label: 'domains.array.caches',
+                defaultSelected: false,
+            },
+        ],
+    },
+    {
+        id: 'docker',
+        label: 'domains.docker',
+        children: [
+            {
+                id: 'docker.containers',
+                label: 'domains.docker.containers',
+                defaultSelected: false,
+            },
+        ],
+    },
+    {
+        id: 'shares',
+        label: 'domains.shares',
+        children: [
+            {
+                id: 'shares.list',
+                label: 'domains.shares.list',
+                defaultSelected: false,
+            },
+        ],
+    },
+    {
+        id: 'vms',
+        label: 'domains.vms',
+        children: [
+            {
+                id: 'vms.list',
+                label: 'domains.vms.list',
+                defaultSelected: false,
+            },
+        ],
+    },
 ];
 const buildNodeIndex = (nodes, acc) => {
     for (const node of nodes) {
@@ -199,7 +258,20 @@ const domainDefinitionsList = [
                 fields: [
                     {
                         name: 'cpu',
-                        selection: [{ name: 'percentTotal' }],
+                        selection: [
+                            { name: 'percentTotal' },
+                            {
+                                name: 'cpus',
+                                selection: [
+                                    { name: 'percentTotal' },
+                                    { name: 'percentUser' },
+                                    { name: 'percentSystem' },
+                                    { name: 'percentNice' },
+                                    { name: 'percentIdle' },
+                                    { name: 'percentIrq' },
+                                ],
+                            },
+                        ],
                     },
                 ],
             },
@@ -211,6 +283,7 @@ const domainDefinitionsList = [
                 common: { type: 'number', role: 'value.percent', unit: '%' },
                 transform: numberOrNull,
             },
+            // Note: CPU core states are created dynamically in main.ts
         ],
     },
     {
@@ -226,6 +299,13 @@ const domainDefinitionsList = [
                             { name: 'total' },
                             { name: 'used' },
                             { name: 'free' },
+                            { name: 'available' },
+                            { name: 'active' },
+                            { name: 'buffcache' },
+                            { name: 'swapTotal' },
+                            { name: 'swapUsed' },
+                            { name: 'swapFree' },
+                            { name: 'percentSwapTotal' },
                         ],
                     },
                 ],
@@ -256,6 +336,300 @@ const domainDefinitionsList = [
                 common: { type: 'number', role: 'value', unit: 'GB' },
                 transform: bytesToGigabytes,
             },
+            {
+                id: 'metrics.memory.availableGb',
+                path: ['metrics', 'memory', 'available'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.activeGb',
+                path: ['metrics', 'memory', 'active'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.buffcacheGb',
+                path: ['metrics', 'memory', 'buffcache'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.swap.totalGb',
+                path: ['metrics', 'memory', 'swapTotal'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.swap.usedGb',
+                path: ['metrics', 'memory', 'swapUsed'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.swap.freeGb',
+                path: ['metrics', 'memory', 'swapFree'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.swap.percentTotal',
+                path: ['metrics', 'memory', 'percentSwapTotal'],
+                common: { type: 'number', role: 'value.percent', unit: '%' },
+                transform: numberOrNull,
+            },
+        ],
+    },
+    {
+        id: 'array.status',
+        selection: [
+            {
+                root: 'array',
+                fields: [
+                    { name: 'state' },
+                    {
+                        name: 'capacity',
+                        selection: [
+                            {
+                                name: 'kilobytes',
+                                selection: [
+                                    { name: 'total' },
+                                    { name: 'used' },
+                                    { name: 'free' },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+            {
+                id: 'array.state',
+                path: ['array', 'state'],
+                common: { type: 'string', role: 'indicator.status' },
+            },
+            {
+                id: 'array.capacity.totalGb',
+                path: ['array', 'capacity', 'kilobytes', 'total'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: kilobytesToGigabytes,
+            },
+            {
+                id: 'array.capacity.usedGb',
+                path: ['array', 'capacity', 'kilobytes', 'used'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: kilobytesToGigabytes,
+            },
+            {
+                id: 'array.capacity.freeGb',
+                path: ['array', 'capacity', 'kilobytes', 'free'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: kilobytesToGigabytes,
+            },
+            {
+                id: 'array.capacity.percentUsed',
+                path: ['array', 'capacity'],
+                common: { type: 'number', role: 'value.percent', unit: '%' },
+                transform: (value) => {
+                    if (!value || typeof value !== 'object')
+                        return null;
+                    const capacity = value;
+                    const kilobytes = capacity.kilobytes;
+                    const total = numberOrNull(kilobytes?.total);
+                    const used = numberOrNull(kilobytes?.used);
+                    if (total && used && total > 0) {
+                        return Math.round((used / total) * 10000) / 100;
+                    }
+                    return null;
+                },
+            },
+        ],
+    },
+    {
+        id: 'array.disks',
+        selection: [
+            {
+                root: 'array',
+                fields: [
+                    {
+                        name: 'disks',
+                        selection: [
+                            { name: 'name' },
+                            { name: 'device' },
+                            { name: 'status' },
+                            { name: 'temp' },
+                            { name: 'type' },
+                            { name: 'size' },
+                            { name: 'fsType' },
+                            { name: 'fsSize' },
+                            { name: 'fsUsed' },
+                            { name: 'fsFree' },
+                            { name: 'isSpinning' },
+                            { name: 'numReads' },
+                            { name: 'numWrites' },
+                            { name: 'numErrors' },
+                            { name: 'warning' },
+                            { name: 'critical' },
+                            { name: 'idx' },
+                            { name: 'rotational' },
+                            { name: 'transport' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+        // Note: Disk states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'array.parities',
+        selection: [
+            {
+                root: 'array',
+                fields: [
+                    {
+                        name: 'parities',
+                        selection: [
+                            { name: 'name' },
+                            { name: 'device' },
+                            { name: 'status' },
+                            { name: 'temp' },
+                            { name: 'type' },
+                            { name: 'size' },
+                            { name: 'fsType' },
+                            { name: 'fsSize' },
+                            { name: 'fsUsed' },
+                            { name: 'fsFree' },
+                            { name: 'isSpinning' },
+                            { name: 'numReads' },
+                            { name: 'numWrites' },
+                            { name: 'numErrors' },
+                            { name: 'warning' },
+                            { name: 'critical' },
+                            { name: 'idx' },
+                            { name: 'rotational' },
+                            { name: 'transport' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+        // Note: Parity states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'array.caches',
+        selection: [
+            {
+                root: 'array',
+                fields: [
+                    {
+                        name: 'caches',
+                        selection: [
+                            { name: 'name' },
+                            { name: 'device' },
+                            { name: 'status' },
+                            { name: 'temp' },
+                            { name: 'type' },
+                            { name: 'size' },
+                            { name: 'fsType' },
+                            { name: 'fsSize' },
+                            { name: 'fsUsed' },
+                            { name: 'fsFree' },
+                            { name: 'isSpinning' },
+                            { name: 'numReads' },
+                            { name: 'numWrites' },
+                            { name: 'numErrors' },
+                            { name: 'warning' },
+                            { name: 'critical' },
+                            { name: 'idx' },
+                            { name: 'rotational' },
+                            { name: 'transport' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+        // Note: Cache states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'docker.containers',
+        selection: [
+            {
+                root: 'docker',
+                fields: [
+                    {
+                        name: 'containers',
+                        selection: [
+                            { name: 'names' },
+                            { name: 'image' },
+                            { name: 'state' },
+                            { name: 'status' },
+                            { name: 'autoStart' },
+                            { name: 'sizeRootFs' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+        // Note: Container states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'shares.list',
+        selection: [
+            {
+                root: 'shares',
+                fields: [
+                    { name: 'id' },
+                    { name: 'name' },
+                    { name: 'free' },
+                    { name: 'used' },
+                    { name: 'size' },
+                    { name: 'include' },
+                    { name: 'exclude' },
+                    { name: 'cache' },
+                    { name: 'nameOrig' },
+                    { name: 'comment' },
+                    { name: 'allocator' },
+                    { name: 'splitLevel' },
+                    { name: 'floor' },
+                    { name: 'cow' },
+                    { name: 'color' },
+                    { name: 'luksStatus' },
+                ],
+            },
+        ],
+        states: [
+        // Note: Share states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'vms.list',
+        selection: [
+            {
+                root: 'vms',
+                fields: [
+                    {
+                        name: 'domains',
+                        selection: [
+                            { name: 'id' },
+                            { name: 'name' },
+                            { name: 'state' },
+                            { name: 'uuid' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+        // Note: VM states are created dynamically in main.ts
         ],
     },
 ];
@@ -283,6 +657,14 @@ function bytesToGigabytes(value) {
     }
     const gigabytes = numeric / (1024 * 1024 * 1024);
     return Number.isFinite(gigabytes) ? gigabytes : null;
+}
+function kilobytesToGigabytes(value) {
+    const numeric = numberOrNull(value);
+    if (numeric === null) {
+        return null;
+    }
+    const gigabytes = numeric / (1024 * 1024);
+    return Number.isFinite(gigabytes) ? Math.round(gigabytes * 100) / 100 : null;
 }
 exports.domainDefinitions = domainDefinitionsList;
 exports.domainDefinitionById = new Map(domainDefinitionsList.map((definition) => [definition.id, definition]));

@@ -105,7 +105,8 @@
       "server.status",
       "metrics.cpu",
       "metrics.memory"
-    ]
+    ],
+    "useSubscriptions": false
   },
   "objects": [],
   "instanceObjects": []
