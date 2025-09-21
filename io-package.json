@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unraid",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "news": {
+      "0.5.0": {
+        "en": "More Unraid queries: Docker containers, shares, VMs, array disks with dynamic state creation,\nApollo Client migration",
+        "de": "Mehr Unraid-Anfragen: Docker-Container, Aktien, VMs, Array-Disks mit dynamischer Zustandserstellung,\nApollo Client Migration",
+        "ru": "Больше запросов Unraid: Докерные контейнеры, акции, виртуальные машины, массивные диски с динамическим созданием состояния,\nКлиентская миграция Apollo",
+        "pt": "Mais consultas Unraid: Contêineres de docker, compartilha, VMs, discos de array com criação dinâmica do estado,\nMigração do cliente Apollo",
+        "nl": "Meer Unraid queries: Docker containers, shares, VMs, array disks met dynamische staat creatie,\nApollo Client migratie",
+        "fr": "Plus de questions inédites: Conteneurs Docker, actions, VMs, disques de tableau avec création d'état dynamique,\nMigration des clients Apollo",
+        "it": "Altre query Unraid: Contenitori, azioni, VM, dischi di array con creazione dinamica dello stato,\nMigrazione client Apollo",
+        "es": "Más consultas inválidas: contenedores Docker, acciones, VMs, discos de matriz con creación de estado dinámico,\nMigración del cliente Apolo",
+        "pl": "Więcej pytań: Kontenery dokujące, akcje, maszyny wirtualne, dyski tablicowe z dynamicznym tworzeniem stanu,\nMigracja klienta Apollo",
+        "uk": "Більше запитів: Docker контейнери, акції, VMs, масивні диски з динамічним створенням стану,\nАполлонська міграція клієнтів",
+        "zh-cn": "更多未发现的查询 : 挂载容器、 股份、 VM、 具有动态状态创建的阵列磁盘,\n阿波罗客户端迁移"
+      },
       "0.4.1": {
         "en": "Documentation",
         "de": "Dokumentation",

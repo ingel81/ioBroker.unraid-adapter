@@ -55,8 +55,7 @@ The adapter creates a structured tree of objects for the monitored data:
   Placeholder for the next version (at the beginning of the line):
   ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.5.0 (2025-09-21)
 
 - (ingel81) More Unraid queries: Docker containers, shares, VMs, array disks with dynamic state creation,
 - (ingel81) Apollo Client migration
