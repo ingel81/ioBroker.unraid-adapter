@@ -199,7 +199,20 @@ const domainDefinitionsList = [
                 fields: [
                     {
                         name: 'cpu',
-                        selection: [{ name: 'percentTotal' }],
+                        selection: [
+                            { name: 'percentTotal' },
+                            {
+                                name: 'cpus',
+                                selection: [
+                                    { name: 'percentTotal' },
+                                    { name: 'percentUser' },
+                                    { name: 'percentSystem' },
+                                    { name: 'percentNice' },
+                                    { name: 'percentIdle' },
+                                    { name: 'percentIrq' },
+                                ],
+                            },
+                        ],
                     },
                 ],
             },
@@ -211,6 +224,7 @@ const domainDefinitionsList = [
                 common: { type: 'number', role: 'value.percent', unit: '%' },
                 transform: numberOrNull,
             },
+            // Note: CPU core states are created dynamically in main.ts
         ],
     },
     {
@@ -226,6 +240,13 @@ const domainDefinitionsList = [
                             { name: 'total' },
                             { name: 'used' },
                             { name: 'free' },
+                            { name: 'available' },
+                            { name: 'active' },
+                            { name: 'buffcache' },
+                            { name: 'swapTotal' },
+                            { name: 'swapUsed' },
+                            { name: 'swapFree' },
+                            { name: 'percentSwapTotal' },
                         ],
                     },
                 ],
@@ -255,6 +276,48 @@ const domainDefinitionsList = [
                 path: ['metrics', 'memory', 'free'],
                 common: { type: 'number', role: 'value', unit: 'GB' },
                 transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.availableGb',
+                path: ['metrics', 'memory', 'available'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.activeGb',
+                path: ['metrics', 'memory', 'active'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.buffcacheGb',
+                path: ['metrics', 'memory', 'buffcache'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.swap.totalGb',
+                path: ['metrics', 'memory', 'swapTotal'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.swap.usedGb',
+                path: ['metrics', 'memory', 'swapUsed'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.swap.freeGb',
+                path: ['metrics', 'memory', 'swapFree'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: bytesToGigabytes,
+            },
+            {
+                id: 'metrics.memory.swap.percentTotal',
+                path: ['metrics', 'memory', 'percentSwapTotal'],
+                common: { type: 'number', role: 'value.percent', unit: '%' },
+                transform: numberOrNull,
             },
         ],
     },

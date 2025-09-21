@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Recent Updates (2025-09-21)
+
+### Apollo Client Integration
+- Migrated from custom GraphQL client to Apollo Client
+- All GraphQL operations now use unified Apollo Client
+- WebSocket subscriptions disabled due to Unraid API issues (arraySubscription bug)
+- Using polling-only approach for reliability
+
+### Extended Metrics
+- **Dynamic CPU Core Detection**: Automatically detects and creates states for all CPU cores
+- **Extended Memory Metrics**: Added available, active, buffcache, and swap metrics
+- See `docs/technical-notes.md` for implementation details
+
 ## Commands
 
 ### Development
@@ -76,3 +89,4 @@ The project is actively being migrated to TypeScript (branch: `ts-migration`). T
 - **GraphQL Query Building**: Dynamic query construction based on selected domains using `GraphQLSelectionBuilder`
 - **Error Handling**: Comprehensive error handling for GraphQL operations with specific error types
 - **Object Lifecycle**: Automatic cleanup of removed domains and proper object tree maintenance
+- nicht in die readme.md schreiben...die ist public verwenden die claude.md oder den docs ordner

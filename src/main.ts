@@ -1,11 +1,7 @@
 import { Adapter, type AdapterOptions } from '@iobroker/adapter-core';
 
-import {
-    GraphQLClient,
-    GraphQLHttpError,
-    GraphQLRequestError,
-    GraphQLResponseError,
-} from './graphql-client';
+import { UnraidApolloClient } from './apollo-client';
+import { SubscriptionManager } from './subscription-manager';
 import {
     allDomainIds,
     defaultEnabledDomains,
@@ -25,6 +21,7 @@ type AdapterSettings = {
     pollIntervalSeconds: number;
     allowSelfSigned: boolean;
     enabledDomains: DomainId[];
+    useSubscriptions?: boolean;
 };
 
 type QueryResult = Record<string, unknown>;
@@ -118,7 +115,10 @@ class UnraidAdapter extends Adapter {
     private pollIntervalMs = 60000;
     private pollTimer?: ioBroker.Timeout;
     private stopRequested = false;
-    private client?: GraphQLClient;
+    private apolloClient?: UnraidApolloClient;
+    private subscriptionManager?: SubscriptionManager;
+    private useSubscriptions = false;
+    private subscriptionsActive = false;
 
     private rawSelection: Set<DomainId> = new Set();
     private effectiveSelection: Set<DomainId> = new Set();
@@ -127,6 +127,10 @@ class UnraidAdapter extends Adapter {
 
     private readonly createdChannels = new Set<string>();
     private readonly createdStates = new Set<string>();
+
+    // Dynamic CPU core tracking
+    private cpuCoresDetected = false;
+    private cpuCoreCount = 0;
 
     public constructor(options: Partial<AdapterOptions> = {}) {
         super({
@@ -154,16 +158,25 @@ class UnraidAdapter extends Adapter {
                 return;
             }
 
-            this.client = new GraphQLClient({
+            // Always initialize Apollo Client for both polling and subscriptions
+            this.apolloClient = new UnraidApolloClient({
                 baseUrl: settings.baseUrl,
-                token: settings.apiToken,
+                apiToken: settings.apiToken,
                 allowSelfSigned: settings.allowSelfSigned,
             });
 
             this.pollIntervalMs = settings.pollIntervalSeconds * 1000;
+            this.useSubscriptions = settings.useSubscriptions ?? false;
 
             await this.cleanupObjectTree(this.staticObjectIds);
             await this.initializeStaticStates(this.selectedDefinitions);
+
+            // Subscription support disabled for now (API issues)
+            // if (this.useSubscriptions) {
+            //     await this.initializeSubscriptions();
+            // }
+
+            // Start polling
             await this.pollOnce();
             this.scheduleNextPoll();
         } catch (error) {
@@ -206,12 +219,54 @@ class UnraidAdapter extends Adapter {
         return ids;
     }
 
+    private async initializeSubscriptions(): Promise<void> {
+        try {
+            this.log.info('Initializing subscriptions...');
+
+            if (!this.apolloClient) {
+                throw new Error('Apollo client not initialized');
+            }
+
+            this.subscriptionManager = new SubscriptionManager({
+                apolloClient: this.apolloClient,
+                onStateUpdate: async (id: string, value: unknown) => {
+                    // Convert value to proper format and write state
+                    const normalizedValue = value === undefined ? null : (value as ioBroker.StateValue | null);
+                    await this.setStateAsync(id, { val: normalizedValue, ack: true });
+                },
+                onError: (error) => {
+                    this.log.warn(`Subscription error: ${error.message}`);
+                },
+                onConnectionLost: () => {
+                    this.log.warn('WebSocket connection lost, falling back to polling for CPU/Memory');
+                    this.subscriptionsActive = false;
+                },
+                onConnectionRestored: () => {
+                    this.log.info('WebSocket connection restored, using subscriptions for CPU/Memory');
+                    this.subscriptionsActive = true;
+                },
+            });
+
+            const success = await this.subscriptionManager.start();
+            if (success) {
+                this.subscriptionsActive = true;
+                this.log.info('Subscriptions active for CPU and Memory metrics');
+            } else {
+                this.log.warn('Subscriptions not available, using polling for all metrics');
+            }
+        } catch (error) {
+            this.log.error(`Failed to initialize subscriptions: ${this.describeError(error)}`);
+            this.log.info('Falling back to polling for all metrics');
+        }
+    }
+
     private validateSettings(): AdapterSettings | null {
         const baseUrl = (this.config.baseUrl ?? '').trim();
         const apiToken = (this.config.apiToken ?? '').trim();
         const pollIntervalSecondsRaw = Number(this.config.pollIntervalSeconds ?? 60);
         const pollIntervalSeconds = Number.isFinite(pollIntervalSecondsRaw) && pollIntervalSecondsRaw > 0 ? pollIntervalSecondsRaw : 60;
         const allowSelfSigned = Boolean(this.config.allowSelfSigned);
+        const useSubscriptions = Boolean(this.config.useSubscriptions);
 
         const enabledDomainsRaw = Array.isArray(this.config.enabledDomains)
             ? (this.config.enabledDomains as string[])
@@ -245,6 +300,7 @@ class UnraidAdapter extends Adapter {
             pollIntervalSeconds,
             allowSelfSigned,
             enabledDomains,
+            useSubscriptions,
         };
     }
 
@@ -265,8 +321,8 @@ class UnraidAdapter extends Adapter {
     }
 
     private async pollOnce(): Promise<void> {
-        if (!this.client) {
-            throw new Error('GraphQL client is not initialised');
+        if (!this.apolloClient) {
+            throw new Error('Apollo client is not initialised');
         }
 
         if (!this.selectedDefinitions.length) {
@@ -281,15 +337,12 @@ class UnraidAdapter extends Adapter {
         }
 
         try {
-            const data = await this.client.query<QueryResult>(query);
+            const data = await this.apolloClient.query<QueryResult>(query);
             this.logGraphQLResponse(data);
             await this.applyData(data);
         } catch (error) {
-            if (error instanceof GraphQLHttpError) {
-                throw new Error(`GraphQL HTTP error ${error.status}: ${error.body || error.message}`);
-            }
-            if (error instanceof GraphQLRequestError || error instanceof GraphQLResponseError) {
-                throw new Error(error.message);
+            if (error instanceof Error) {
+                throw new Error(`GraphQL error: ${error.message}`);
             }
             throw error;
         }
@@ -304,6 +357,9 @@ class UnraidAdapter extends Adapter {
     }
 
     private async applyData(data: QueryResult): Promise<void> {
+        // Check for CPU cores and create states dynamically if needed
+        await this.handleDynamicCpuCores(data);
+
         for (const definition of this.selectedDefinitions) {
             await this.applyDefinition(definition, data);
         }
@@ -317,7 +373,92 @@ class UnraidAdapter extends Adapter {
         }
     }
 
+    private async handleDynamicCpuCores(data: QueryResult): Promise<void> {
+        // Only process CPU cores if metrics.cpu is selected and data is available
+        const metrics = data.metrics as { cpu?: { cpus?: unknown[] } };
+        if (!metrics?.cpu?.cpus) {
+            return;
+        }
+
+        const cores = metrics.cpu.cpus;
+        const coreCount = Array.isArray(cores) ? cores.length : 0;
+
+        // Create CPU core states on first detection or if core count changed
+        if (!this.cpuCoresDetected || this.cpuCoreCount !== coreCount) {
+            this.cpuCoreCount = coreCount;
+            this.cpuCoresDetected = true;
+
+            this.log.info(`Detected ${coreCount} CPU cores, creating states...`);
+
+            // Create core count state
+            await this.writeState(
+                'metrics.cpu.cores.count',
+                { type: 'number', role: 'value', unit: '' },
+                coreCount
+            );
+
+            // Create states for each CPU core
+            for (let i = 0; i < coreCount; i++) {
+                const corePrefix = `metrics.cpu.cores.${i}`;
+
+                // Create states for this core
+                await this.writeState(`${corePrefix}.percentTotal`,
+                    { type: 'number', role: 'value.percent', unit: '%' }, null);
+                await this.writeState(`${corePrefix}.percentUser`,
+                    { type: 'number', role: 'value.percent', unit: '%' }, null);
+                await this.writeState(`${corePrefix}.percentSystem`,
+                    { type: 'number', role: 'value.percent', unit: '%' }, null);
+                await this.writeState(`${corePrefix}.percentNice`,
+                    { type: 'number', role: 'value.percent', unit: '%' }, null);
+                await this.writeState(`${corePrefix}.percentIdle`,
+                    { type: 'number', role: 'value.percent', unit: '%' }, null);
+                await this.writeState(`${corePrefix}.percentIrq`,
+                    { type: 'number', role: 'value.percent', unit: '%' }, null);
+            }
+        }
+
+        // Update CPU core values
+        for (let i = 0; i < cores.length; i++) {
+            const core = cores[i] as Record<string, unknown>;
+            const corePrefix = `metrics.cpu.cores.${i}`;
+
+            await this.setStateAsync(`${corePrefix}.percentTotal`,
+                { val: this.toNumberOrNull(core.percentTotal), ack: true });
+            await this.setStateAsync(`${corePrefix}.percentUser`,
+                { val: this.toNumberOrNull(core.percentUser), ack: true });
+            await this.setStateAsync(`${corePrefix}.percentSystem`,
+                { val: this.toNumberOrNull(core.percentSystem), ack: true });
+            await this.setStateAsync(`${corePrefix}.percentNice`,
+                { val: this.toNumberOrNull(core.percentNice), ack: true });
+            await this.setStateAsync(`${corePrefix}.percentIdle`,
+                { val: this.toNumberOrNull(core.percentIdle), ack: true });
+            await this.setStateAsync(`${corePrefix}.percentIrq`,
+                { val: this.toNumberOrNull(core.percentIrq), ack: true });
+        }
+    }
+
+    private toNumberOrNull(value: unknown): number | null {
+        if (value === null || value === undefined) {
+            return null;
+        }
+        if (typeof value === 'number') {
+            return Number.isFinite(value) ? value : null;
+        }
+        if (typeof value === 'string') {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : null;
+        }
+        return null;
+    }
+
     private async applyDefinition(definition: DomainDefinition, data: QueryResult): Promise<void> {
+        // First check if this domain's data exists in the result
+        const rootPath = definition.selection[0]?.root;
+        if (!rootPath || !(rootPath in data)) {
+            // Skip if this domain wasn't queried
+            return;
+        }
+
         for (const mapping of definition.states) {
             const rawValue = this.resolveValue(data, mapping.path);
             const transformed = mapping.transform ? mapping.transform(rawValue) : rawValue;
@@ -449,9 +590,14 @@ class UnraidAdapter extends Adapter {
             if (this.pollTimer) {
                 this.clearTimeout(this.pollTimer);
             }
-            if (this.client) {
-                void this.client.dispose().catch((error) => {
-                    this.log.warn(`Failed to dispose GraphQL client: ${this.describeError(error)}`);
+            if (this.subscriptionManager) {
+                void this.subscriptionManager.stop().catch((error) => {
+                    this.log.warn(`Failed to stop subscriptions: ${this.describeError(error)}`);
+                });
+            }
+            if (this.apolloClient) {
+                void this.apolloClient.dispose().catch((error) => {
+                    this.log.warn(`Failed to dispose Apollo client: ${this.describeError(error)}`);
                 });
             }
         } finally {
