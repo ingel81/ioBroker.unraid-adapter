@@ -18,7 +18,7 @@ import {
     domainNodeById,
 } from '../../../src/shared/unraid-domains';
 
-const styles = () =>
+const styles = (theme: any) =>
     createStyles({
         tab: {
             maxWidth: 800,
@@ -39,11 +39,12 @@ const styles = () =>
             marginBottom: 16,
         },
         treeContainer: {
-            border: '1px solid #cccccc',
+            border: `1px solid ${theme.palette.type === 'dark' ? '#555' : '#cccccc'}`,
             borderRadius: 4,
             padding: '12px 16px',
             maxHeight: 420,
             overflowY: 'auto',
+            backgroundColor: theme.palette.type === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
         },
         treeRow: {
             display: 'flex',
@@ -57,11 +58,15 @@ const styles = () =>
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '1px solid #cccccc',
+            border: `1px solid ${theme.palette.type === 'dark' ? '#666' : '#cccccc'}`,
             borderRadius: 4,
             padding: 0,
             backgroundColor: 'transparent',
             cursor: 'pointer',
+            color: theme.palette.type === 'dark' ? '#fff' : 'inherit',
+            '&:hover': {
+                backgroundColor: theme.palette.type === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+            },
         },
         treeTogglePlaceholder: {
             width: 28,
@@ -83,6 +88,7 @@ const styles = () =>
 type SettingsProps = WithStyles<typeof styles> & {
     native: ioBroker.AdapterConfig;
     onChange: <K extends keyof ioBroker.AdapterConfig>(attr: K, value: ioBroker.AdapterConfig[K]) => void;
+    themeType?: string;
 };
 
 type SettingsState = {
@@ -372,4 +378,4 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
     }
 }
 
-export default withStyles(styles)(Settings);
+export default withStyles(styles)(Settings as React.ComponentType<SettingsProps>);

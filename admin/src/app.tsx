@@ -64,6 +64,7 @@ class App extends GenericApp {
                     <Settings
                         native={nativeConfig}
                         onChange={(attr, value) => this.updateNativeValue(attr as string, value)}
+                        themeType={this.state.themeType}
                     />
                 </div>
                 {this.renderError()}
