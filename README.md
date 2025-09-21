@@ -42,6 +42,8 @@ This adapter connects ioBroker to Unraid servers via the GraphQL API to monitor 
 ### **WORK IN PROGRESS**
 
 - (ingel81) Translations
+- (ingel81) Logo
+- (ingel81) Readme
 
 ### 0.2.2 (2025-09-21)
 
