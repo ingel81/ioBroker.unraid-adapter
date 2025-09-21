@@ -6,10 +6,13 @@
 *.code-workspace
 node_modules
 nbproject
-# Build directory - main.js is tracked for ioBroker distribution
-build/
-!build/main.js
-!build/main.js.map
+# Build directory - JavaScript files are tracked for ioBroker distribution
+# TypeScript declarations and sourcemaps are ignored
+build/**/*.d.ts
+build/**/*.d.ts.map
+# But NOT the JavaScript files - they need to be distributed
+!build/**/*.js
+!build/**/*.js.map
 # prebuilt admin bundle stays tracked intentionally
 # admin/build/
 
