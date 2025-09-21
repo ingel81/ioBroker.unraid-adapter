@@ -44,6 +44,32 @@ const domainTreeDefinition = [
             },
         ],
     },
+    {
+        id: 'array',
+        label: 'domains.array',
+        children: [
+            {
+                id: 'array.status',
+                label: 'domains.array.status',
+                defaultSelected: true,
+            },
+            {
+                id: 'array.disks',
+                label: 'domains.array.disks',
+                defaultSelected: true,
+            },
+            {
+                id: 'array.parities',
+                label: 'domains.array.parities',
+                defaultSelected: false,
+            },
+            {
+                id: 'array.caches',
+                label: 'domains.array.caches',
+                defaultSelected: false,
+            },
+        ],
+    },
 ];
 const buildNodeIndex = (nodes, acc) => {
     for (const node of nodes) {
@@ -321,6 +347,183 @@ const domainDefinitionsList = [
             },
         ],
     },
+    {
+        id: 'array.status',
+        selection: [
+            {
+                root: 'array',
+                fields: [
+                    { name: 'state' },
+                    {
+                        name: 'capacity',
+                        selection: [
+                            {
+                                name: 'kilobytes',
+                                selection: [
+                                    { name: 'total' },
+                                    { name: 'used' },
+                                    { name: 'free' },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+            {
+                id: 'array.state',
+                path: ['array', 'state'],
+                common: { type: 'string', role: 'indicator.status' },
+            },
+            {
+                id: 'array.capacity.totalGb',
+                path: ['array', 'capacity', 'kilobytes', 'total'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: kilobytesToGigabytes,
+            },
+            {
+                id: 'array.capacity.usedGb',
+                path: ['array', 'capacity', 'kilobytes', 'used'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: kilobytesToGigabytes,
+            },
+            {
+                id: 'array.capacity.freeGb',
+                path: ['array', 'capacity', 'kilobytes', 'free'],
+                common: { type: 'number', role: 'value', unit: 'GB' },
+                transform: kilobytesToGigabytes,
+            },
+            {
+                id: 'array.capacity.percentUsed',
+                path: ['array', 'capacity'],
+                common: { type: 'number', role: 'value.percent', unit: '%' },
+                transform: (value) => {
+                    if (!value || typeof value !== 'object')
+                        return null;
+                    const capacity = value;
+                    const kilobytes = capacity.kilobytes;
+                    const total = numberOrNull(kilobytes?.total);
+                    const used = numberOrNull(kilobytes?.used);
+                    if (total && used && total > 0) {
+                        return Math.round((used / total) * 10000) / 100;
+                    }
+                    return null;
+                },
+            },
+        ],
+    },
+    {
+        id: 'array.disks',
+        selection: [
+            {
+                root: 'array',
+                fields: [
+                    {
+                        name: 'disks',
+                        selection: [
+                            { name: 'name' },
+                            { name: 'device' },
+                            { name: 'status' },
+                            { name: 'temp' },
+                            { name: 'type' },
+                            { name: 'size' },
+                            { name: 'fsType' },
+                            { name: 'fsSize' },
+                            { name: 'fsUsed' },
+                            { name: 'fsFree' },
+                            { name: 'isSpinning' },
+                            { name: 'numReads' },
+                            { name: 'numWrites' },
+                            { name: 'numErrors' },
+                            { name: 'warning' },
+                            { name: 'critical' },
+                            { name: 'idx' },
+                            { name: 'rotational' },
+                            { name: 'transport' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+        // Note: Disk states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'array.parities',
+        selection: [
+            {
+                root: 'array',
+                fields: [
+                    {
+                        name: 'parities',
+                        selection: [
+                            { name: 'name' },
+                            { name: 'device' },
+                            { name: 'status' },
+                            { name: 'temp' },
+                            { name: 'type' },
+                            { name: 'size' },
+                            { name: 'fsType' },
+                            { name: 'fsSize' },
+                            { name: 'fsUsed' },
+                            { name: 'fsFree' },
+                            { name: 'isSpinning' },
+                            { name: 'numReads' },
+                            { name: 'numWrites' },
+                            { name: 'numErrors' },
+                            { name: 'warning' },
+                            { name: 'critical' },
+                            { name: 'idx' },
+                            { name: 'rotational' },
+                            { name: 'transport' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+        // Note: Parity states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'array.caches',
+        selection: [
+            {
+                root: 'array',
+                fields: [
+                    {
+                        name: 'caches',
+                        selection: [
+                            { name: 'name' },
+                            { name: 'device' },
+                            { name: 'status' },
+                            { name: 'temp' },
+                            { name: 'type' },
+                            { name: 'size' },
+                            { name: 'fsType' },
+                            { name: 'fsSize' },
+                            { name: 'fsUsed' },
+                            { name: 'fsFree' },
+                            { name: 'isSpinning' },
+                            { name: 'numReads' },
+                            { name: 'numWrites' },
+                            { name: 'numErrors' },
+                            { name: 'warning' },
+                            { name: 'critical' },
+                            { name: 'idx' },
+                            { name: 'rotational' },
+                            { name: 'transport' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+        // Note: Cache states are created dynamically in main.ts
+        ],
+    },
 ];
 function numberOrNull(value) {
     if (value === null || value === undefined) {
@@ -346,6 +549,14 @@ function bytesToGigabytes(value) {
     }
     const gigabytes = numeric / (1024 * 1024 * 1024);
     return Number.isFinite(gigabytes) ? gigabytes : null;
+}
+function kilobytesToGigabytes(value) {
+    const numeric = numberOrNull(value);
+    if (numeric === null) {
+        return null;
+    }
+    const gigabytes = numeric / (1024 * 1024);
+    return Number.isFinite(gigabytes) ? Math.round(gigabytes * 100) / 100 : null;
 }
 exports.domainDefinitions = domainDefinitionsList;
 exports.domainDefinitionById = new Map(domainDefinitionsList.map((definition) => [definition.id, definition]));

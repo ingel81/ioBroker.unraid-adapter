@@ -93,6 +93,11 @@ class UnraidAdapter extends adapter_core_1.Adapter {
     // Dynamic CPU core tracking
     cpuCoresDetected = false;
     cpuCoreCount = 0;
+    // Dynamic array disk tracking
+    arrayDisksDetected = false;
+    diskCount = 0;
+    parityCount = 0;
+    cacheCount = 0;
     constructor(options = {}) {
         super({
             ...options,
@@ -290,6 +295,8 @@ class UnraidAdapter extends adapter_core_1.Adapter {
     async applyData(data) {
         // Check for CPU cores and create states dynamically if needed
         await this.handleDynamicCpuCores(data);
+        // Check for array disks and create states dynamically if needed
+        await this.handleDynamicArrayDisks(data);
         for (const definition of this.selectedDefinitions) {
             await this.applyDefinition(definition, data);
         }
@@ -339,6 +346,148 @@ class UnraidAdapter extends adapter_core_1.Adapter {
             await this.setStateAsync(`${corePrefix}.percentIdle`, { val: this.toNumberOrNull(core.percentIdle), ack: true });
             await this.setStateAsync(`${corePrefix}.percentIrq`, { val: this.toNumberOrNull(core.percentIrq), ack: true });
         }
+    }
+    async handleDynamicArrayDisks(data) {
+        // Only process array data if array domains are selected
+        const array = data.array;
+        if (!array) {
+            return;
+        }
+        const disks = Array.isArray(array.disks) ? array.disks : [];
+        const parities = Array.isArray(array.parities) ? array.parities : [];
+        const caches = Array.isArray(array.caches) ? array.caches : [];
+        const diskCount = disks.length;
+        const parityCount = parities.length;
+        const cacheCount = caches.length;
+        // Create or update disk states if needed
+        if (!this.arrayDisksDetected ||
+            this.diskCount !== diskCount ||
+            this.parityCount !== parityCount ||
+            this.cacheCount !== cacheCount) {
+            this.diskCount = diskCount;
+            this.parityCount = parityCount;
+            this.cacheCount = cacheCount;
+            this.arrayDisksDetected = true;
+            this.log.info(`Detected array configuration: ${diskCount} data disks, ${parityCount} parity disks, ${cacheCount} cache disks`);
+            // Create count states
+            if (this.effectiveSelection.has('array.disks')) {
+                await this.writeState('array.disks.count', { type: 'number', role: 'value', unit: '' }, diskCount);
+                await this.createDiskStates('array.disks', disks);
+            }
+            if (this.effectiveSelection.has('array.parities')) {
+                await this.writeState('array.parities.count', { type: 'number', role: 'value', unit: '' }, parityCount);
+                await this.createDiskStates('array.parities', parities);
+            }
+            if (this.effectiveSelection.has('array.caches')) {
+                await this.writeState('array.caches.count', { type: 'number', role: 'value', unit: '' }, cacheCount);
+                await this.createDiskStates('array.caches', caches);
+            }
+        }
+        // Update disk values
+        if (this.effectiveSelection.has('array.disks')) {
+            await this.updateDiskValues('array.disks', disks);
+        }
+        if (this.effectiveSelection.has('array.parities')) {
+            await this.updateDiskValues('array.parities', parities);
+        }
+        if (this.effectiveSelection.has('array.caches')) {
+            await this.updateDiskValues('array.caches', caches);
+        }
+    }
+    async createDiskStates(prefix, disks) {
+        for (let i = 0; i < disks.length; i++) {
+            const disk = disks[i];
+            const diskPrefix = `${prefix}.${disk.idx ?? i}`;
+            // Basic info states
+            await this.writeState(`${diskPrefix}.name`, { type: 'string', role: 'text' }, null);
+            await this.writeState(`${diskPrefix}.device`, { type: 'string', role: 'text' }, null);
+            await this.writeState(`${diskPrefix}.status`, { type: 'string', role: 'indicator.status' }, null);
+            await this.writeState(`${diskPrefix}.temp`, { type: 'number', role: 'value.temperature', unit: '°C' }, null);
+            await this.writeState(`${diskPrefix}.type`, { type: 'string', role: 'text' }, null);
+            // Size states
+            await this.writeState(`${diskPrefix}.sizeGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
+            await this.writeState(`${diskPrefix}.fsSizeGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
+            await this.writeState(`${diskPrefix}.fsUsedGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
+            await this.writeState(`${diskPrefix}.fsFreeGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
+            // File system info
+            await this.writeState(`${diskPrefix}.fsType`, { type: 'string', role: 'text' }, null);
+            await this.writeState(`${diskPrefix}.isSpinning`, { type: 'boolean', role: 'indicator' }, null);
+            // Performance counters
+            await this.writeState(`${diskPrefix}.numReads`, { type: 'number', role: 'value' }, null);
+            await this.writeState(`${diskPrefix}.numWrites`, { type: 'number', role: 'value' }, null);
+            await this.writeState(`${diskPrefix}.numErrors`, { type: 'number', role: 'value' }, null);
+            // Temperature thresholds
+            await this.writeState(`${diskPrefix}.warning`, { type: 'number', role: 'value.temperature', unit: '°C' }, null);
+            await this.writeState(`${diskPrefix}.critical`, { type: 'number', role: 'value.temperature', unit: '°C' }, null);
+            // Additional info
+            await this.writeState(`${diskPrefix}.rotational`, { type: 'boolean', role: 'indicator' }, null);
+            await this.writeState(`${diskPrefix}.transport`, { type: 'string', role: 'text' }, null);
+        }
+    }
+    async updateDiskValues(prefix, disks) {
+        for (const disk of disks) {
+            const d = disk;
+            const diskPrefix = `${prefix}.${d.idx ?? disks.indexOf(disk)}`;
+            await this.setStateAsync(`${diskPrefix}.name`, { val: this.toStringOrNull(d.name), ack: true });
+            await this.setStateAsync(`${diskPrefix}.device`, { val: this.toStringOrNull(d.device), ack: true });
+            await this.setStateAsync(`${diskPrefix}.status`, { val: this.toStringOrNull(d.status), ack: true });
+            await this.setStateAsync(`${diskPrefix}.temp`, { val: this.toNumberOrNull(d.temp), ack: true });
+            await this.setStateAsync(`${diskPrefix}.type`, { val: this.toStringOrNull(d.type), ack: true });
+            // Convert KB to GB for sizes
+            await this.setStateAsync(`${diskPrefix}.sizeGb`, { val: this.kilobytesToGigabytes(d.size), ack: true });
+            await this.setStateAsync(`${diskPrefix}.fsSizeGb`, { val: this.kilobytesToGigabytes(d.fsSize), ack: true });
+            await this.setStateAsync(`${diskPrefix}.fsUsedGb`, { val: this.kilobytesToGigabytes(d.fsUsed), ack: true });
+            await this.setStateAsync(`${diskPrefix}.fsFreeGb`, { val: this.kilobytesToGigabytes(d.fsFree), ack: true });
+            await this.setStateAsync(`${diskPrefix}.fsType`, { val: this.toStringOrNull(d.fsType), ack: true });
+            await this.setStateAsync(`${diskPrefix}.isSpinning`, { val: this.toBooleanOrNull(d.isSpinning), ack: true });
+            // BigInt handling for counters
+            await this.setStateAsync(`${diskPrefix}.numReads`, { val: this.bigIntToNumber(d.numReads), ack: true });
+            await this.setStateAsync(`${diskPrefix}.numWrites`, { val: this.bigIntToNumber(d.numWrites), ack: true });
+            await this.setStateAsync(`${diskPrefix}.numErrors`, { val: this.bigIntToNumber(d.numErrors), ack: true });
+            await this.setStateAsync(`${diskPrefix}.warning`, { val: this.toNumberOrNull(d.warning), ack: true });
+            await this.setStateAsync(`${diskPrefix}.critical`, { val: this.toNumberOrNull(d.critical), ack: true });
+            await this.setStateAsync(`${diskPrefix}.rotational`, { val: this.toBooleanOrNull(d.rotational), ack: true });
+            await this.setStateAsync(`${diskPrefix}.transport`, { val: this.toStringOrNull(d.transport), ack: true });
+        }
+    }
+    kilobytesToGigabytes(value) {
+        const numeric = this.toNumberOrNull(value);
+        if (numeric === null) {
+            return null;
+        }
+        const gb = numeric / (1024 * 1024);
+        return Number.isFinite(gb) ? Math.round(gb * 100) / 100 : null;
+    }
+    bigIntToNumber(value) {
+        if (value === null || value === undefined) {
+            return null;
+        }
+        if (typeof value === 'bigint') {
+            const num = Number(value);
+            return Number.isFinite(num) ? num : null;
+        }
+        return this.toNumberOrNull(value);
+    }
+    toStringOrNull(value) {
+        if (value === null || value === undefined) {
+            return null;
+        }
+        if (typeof value === 'string') {
+            return value;
+        }
+        if (typeof value === 'number' || typeof value === 'boolean') {
+            return String(value);
+        }
+        return null;
+    }
+    toBooleanOrNull(value) {
+        if (value === null || value === undefined) {
+            return null;
+        }
+        if (typeof value === 'boolean') {
+            return value;
+        }
+        return null;
     }
     toNumberOrNull(value) {
         if (value === null || value === undefined) {
