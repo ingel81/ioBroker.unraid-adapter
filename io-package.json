@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unraid-adapter",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "Release testing with npm",
+        "de": "Tests für die Version mit npm durchführen",
+        "ru": "Тестирование релиза с помощью npm",
+        "pt": "Teste de versão com npm",
+        "nl": "Uitvoeren van releasetest met npm",
+        "fr": "Test de publication avec npm",
+        "it": "Test di rilascio con npm",
+        "es": "Pruebas de lanzamiento con npm",
+        "pl": "Testowanie wydania za pomocą npm",
+        "uk": "Тестування релізу за допомогою npm",
+        "zh-cn": "使用npm进行发布测试"
+      },
       "0.1.0": {
         "en": "first data points of Unraid Api included\nmigrated everything to Typescript",
         "de": "Erste Datensätze der Unraid API hinzugefügt.\nAlles auf Typescript migriert",
