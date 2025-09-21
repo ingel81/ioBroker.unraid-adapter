@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unraid",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "news": {
+      "0.4.0": {
+        "en": "Adapter renamed to iobroker.unraid",
+        "de": "Adapter umbenannt in iobroker.unraid",
+        "ru": "Адаптер был переименован в iobroker.unraid",
+        "pt": "Adaptador renomeado para iobroker.unraid",
+        "nl": "Adapter hernoemd naar iobroker.unraid",
+        "fr": "Adaptateur renommé en iobroker.unraid",
+        "it": "Adattatore rinominato in iobroker.unraid",
+        "es": "Adaptador renombrado a iobroker.unraid",
+        "pl": "Adapter został przemianowany na iobroker.unraid",
+        "uk": "Адаптер перейменований на iobroker.unraid",
+        "zh-cn": "适配器已更名为iobroker.unraid"
+      },
       "0.3.0": {
         "en": "Translations\nLogo\nReadme",
         "de": "Übersetzungen\nLogo\nLiesmich",
