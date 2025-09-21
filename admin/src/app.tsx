@@ -57,10 +57,15 @@ class App extends GenericApp {
 
         return (
             <div className="App">
-                <Settings
-                    native={nativeConfig}
-                    onChange={(attr, value) => this.updateNativeValue(attr as string, value)}
-                />
+                <div style={{
+                    maxHeight: 'calc(100vh - 75px)',
+                    overflowY: 'auto'
+                }}>
+                    <Settings
+                        native={nativeConfig}
+                        onChange={(attr, value) => this.updateNativeValue(attr as string, value)}
+                    />
+                </div>
                 {this.renderError()}
                 {this.renderToast()}
                 {this.renderSaveCloseButtons()}
