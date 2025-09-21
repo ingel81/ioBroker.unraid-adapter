@@ -19,7 +19,13 @@ export type DomainId =
     | 'array.status'
     | 'array.disks'
     | 'array.parities'
-    | 'array.caches';
+    | 'array.caches'
+    | 'docker'
+    | 'docker.containers'
+    | 'shares'
+    | 'shares.list'
+    | 'vms'
+    | 'vms.list';
 
 export interface FieldSpec {
     name: string;
@@ -115,6 +121,39 @@ const domainTreeDefinition: readonly DomainNode[] = [
             {
                 id: 'array.caches',
                 label: 'domains.array.caches',
+                defaultSelected: false,
+            },
+        ],
+    },
+    {
+        id: 'docker',
+        label: 'domains.docker',
+        children: [
+            {
+                id: 'docker.containers',
+                label: 'domains.docker.containers',
+                defaultSelected: false,
+            },
+        ],
+    },
+    {
+        id: 'shares',
+        label: 'domains.shares',
+        children: [
+            {
+                id: 'shares.list',
+                label: 'domains.shares.list',
+                defaultSelected: false,
+            },
+        ],
+    },
+    {
+        id: 'vms',
+        label: 'domains.vms',
+        children: [
+            {
+                id: 'vms.list',
+                label: 'domains.vms.list',
                 defaultSelected: false,
             },
         ],
@@ -584,6 +623,81 @@ const domainDefinitionsList: readonly DomainDefinition[] = [
         ],
         states: [
             // Note: Cache states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'docker.containers',
+        selection: [
+            {
+                root: 'docker',
+                fields: [
+                    {
+                        name: 'containers',
+                        selection: [
+                            { name: 'names' },
+                            { name: 'image' },
+                            { name: 'state' },
+                            { name: 'status' },
+                            { name: 'autoStart' },
+                            { name: 'sizeRootFs' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+            // Note: Container states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'shares.list',
+        selection: [
+            {
+                root: 'shares',
+                fields: [
+                    { name: 'id' },
+                    { name: 'name' },
+                    { name: 'free' },
+                    { name: 'used' },
+                    { name: 'size' },
+                    { name: 'include' },
+                    { name: 'exclude' },
+                    { name: 'cache' },
+                    { name: 'nameOrig' },
+                    { name: 'comment' },
+                    { name: 'allocator' },
+                    { name: 'splitLevel' },
+                    { name: 'floor' },
+                    { name: 'cow' },
+                    { name: 'color' },
+                    { name: 'luksStatus' },
+                ],
+            },
+        ],
+        states: [
+            // Note: Share states are created dynamically in main.ts
+        ],
+    },
+    {
+        id: 'vms.list',
+        selection: [
+            {
+                root: 'vms',
+                fields: [
+                    {
+                        name: 'domains',
+                        selection: [
+                            { name: 'id' },
+                            { name: 'name' },
+                            { name: 'state' },
+                            { name: 'uuid' },
+                        ],
+                    },
+                ],
+            },
+        ],
+        states: [
+            // Note: VM states are created dynamically in main.ts
         ],
     },
 ];

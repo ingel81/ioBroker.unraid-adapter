@@ -138,6 +138,18 @@ class UnraidAdapter extends Adapter {
     private parityCount = 0;
     private cacheCount = 0;
 
+    // Dynamic docker container tracking
+    private dockerContainersDetected = false;
+    private containerNames: Set<string> = new Set();
+
+    // Dynamic shares tracking
+    private sharesDetected = false;
+    private shareNames: Set<string> = new Set();
+
+    // Dynamic VM tracking
+    private vmsDetected = false;
+    private vmUuids: Set<string> = new Set();
+
     public constructor(options: Partial<AdapterOptions> = {}) {
         super({
             ...options,
@@ -369,6 +381,15 @@ class UnraidAdapter extends Adapter {
         // Check for array disks and create states dynamically if needed
         await this.handleDynamicArrayDisks(data);
 
+        // Check for docker containers and create states dynamically if needed
+        await this.handleDynamicDockerContainers(data);
+
+        // Check for shares and create states dynamically if needed
+        await this.handleDynamicShares(data);
+
+        // Check for VMs and create states dynamically if needed
+        await this.handleDynamicVms(data);
+
         for (const definition of this.selectedDefinitions) {
             await this.applyDefinition(definition, data);
         }
@@ -536,6 +557,8 @@ class UnraidAdapter extends Adapter {
                 { type: 'number', role: 'value', unit: 'GB' }, null);
             await this.writeState(`${diskPrefix}.fsFreeGb`,
                 { type: 'number', role: 'value', unit: 'GB' }, null);
+            await this.writeState(`${diskPrefix}.fsUsedPercent`,
+                { type: 'number', role: 'value.percent', unit: '%' }, null);
 
             // File system info
             await this.writeState(`${diskPrefix}.fsType`,
@@ -591,6 +614,11 @@ class UnraidAdapter extends Adapter {
             await this.setStateAsync(`${diskPrefix}.fsFreeGb`,
                 { val: this.kilobytesToGigabytes(d.fsFree), ack: true });
 
+            // Calculate and set fsUsedPercent
+            const fsUsedPercent = this.calculateUsagePercent(d.fsUsed, d.fsSize);
+            await this.setStateAsync(`${diskPrefix}.fsUsedPercent`,
+                { val: fsUsedPercent, ack: true });
+
             await this.setStateAsync(`${diskPrefix}.fsType`,
                 { val: this.toStringOrNull(d.fsType), ack: true });
             await this.setStateAsync(`${diskPrefix}.isSpinning`,
@@ -623,6 +651,290 @@ class UnraidAdapter extends Adapter {
         }
         const gb = numeric / (1024 * 1024);
         return Number.isFinite(gb) ? Math.round(gb * 100) / 100 : null;
+    }
+
+    private bytesToGigabytes(value: unknown): number | null {
+        const numeric = this.toNumberOrNull(value);
+        if (numeric === null) {
+            return null;
+        }
+        const gb = numeric / (1024 * 1024 * 1024);
+        return Number.isFinite(gb) ? Math.round(gb * 100) / 100 : null;
+    }
+
+    private calculateUsagePercent(used: unknown, total: unknown): number | null {
+        const usedNumeric = this.toNumberOrNull(used);
+        const totalNumeric = this.toNumberOrNull(total);
+
+        // Return null if either value is null or total is 0
+        if (usedNumeric === null || totalNumeric === null || totalNumeric === 0) {
+            return null;
+        }
+
+        const percent = (usedNumeric / totalNumeric) * 100;
+        return Number.isFinite(percent) ? Math.round(percent * 100) / 100 : null;
+    }
+
+    private async handleDynamicDockerContainers(data: QueryResult): Promise<void> {
+        // Only process docker containers if docker.containers is selected
+        if (!this.effectiveSelection.has('docker.containers')) {
+            return;
+        }
+
+        const docker = data.docker as { containers?: unknown[] };
+        if (!docker?.containers) {
+            return;
+        }
+
+        const containers = Array.isArray(docker.containers) ? docker.containers : [];
+        const containerNames = new Set<string>();
+
+        for (const container of containers) {
+            const c = container as Record<string, unknown>;
+            const names = c.names as string[] | null;
+            if (names && Array.isArray(names) && names.length > 0) {
+                // Use first name, remove leading slash
+                const name = names[0].replace(/^\//, '');
+                containerNames.add(name);
+            }
+        }
+
+        // Check if we need to create new container states
+        const needsUpdate = !this.dockerContainersDetected ||
+            containerNames.size !== this.containerNames.size ||
+            ![...containerNames].every(name => this.containerNames.has(name));
+
+        if (needsUpdate) {
+            this.containerNames = containerNames;
+            this.dockerContainersDetected = true;
+
+            this.log.info(`Detected ${containerNames.size} Docker containers`);
+
+            // Create container count state
+            await this.writeState('docker.containers.count',
+                { type: 'number', role: 'value', unit: '' }, containerNames.size);
+
+            // Create states for each container
+            for (const container of containers) {
+                const c = container as Record<string, unknown>;
+                const names = c.names as string[] | null;
+                if (!names || !Array.isArray(names) || names.length === 0) continue;
+
+                const name = names[0].replace(/^\//, '');
+                const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+                await this.writeState(`${containerPrefix}.name`,
+                    { type: 'string', role: 'text' }, null);
+                await this.writeState(`${containerPrefix}.image`,
+                    { type: 'string', role: 'text' }, null);
+                await this.writeState(`${containerPrefix}.state`,
+                    { type: 'string', role: 'indicator.status' }, null);
+                await this.writeState(`${containerPrefix}.status`,
+                    { type: 'string', role: 'text' }, null);
+                await this.writeState(`${containerPrefix}.autoStart`,
+                    { type: 'boolean', role: 'indicator' }, null);
+                await this.writeState(`${containerPrefix}.sizeGb`,
+                    { type: 'number', role: 'value', unit: 'GB' }, null);
+            }
+        }
+
+        // Update container values
+        for (const container of containers) {
+            const c = container as Record<string, unknown>;
+            const names = c.names as string[] | null;
+            if (!names || !Array.isArray(names) || names.length === 0) continue;
+
+            const name = names[0].replace(/^\//, '');
+            const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+            await this.setStateAsync(`${containerPrefix}.name`,
+                { val: name, ack: true });
+            await this.setStateAsync(`${containerPrefix}.image`,
+                { val: this.toStringOrNull(c.image), ack: true });
+            await this.setStateAsync(`${containerPrefix}.state`,
+                { val: this.toStringOrNull(c.state), ack: true });
+            await this.setStateAsync(`${containerPrefix}.status`,
+                { val: this.toStringOrNull(c.status), ack: true });
+            await this.setStateAsync(`${containerPrefix}.autoStart`,
+                { val: this.toBooleanOrNull(c.autoStart), ack: true });
+            await this.setStateAsync(`${containerPrefix}.sizeGb`,
+                { val: this.bytesToGigabytes(c.sizeRootFs), ack: true });
+        }
+    }
+
+    private async handleDynamicShares(data: QueryResult): Promise<void> {
+        // Only process shares if shares.list is selected
+        if (!this.effectiveSelection.has('shares.list')) {
+            return;
+        }
+
+        const shares = data.shares as unknown[];
+        if (!shares || !Array.isArray(shares)) {
+            return;
+        }
+
+        const shareNames = new Set<string>();
+        for (const share of shares) {
+            const s = share as Record<string, unknown>;
+            const name = s.name as string | null;
+            if (name) {
+                shareNames.add(name);
+            }
+        }
+
+        // Check if we need to create new share states
+        const needsUpdate = !this.sharesDetected ||
+            shareNames.size !== this.shareNames.size ||
+            ![...shareNames].every(name => this.shareNames.has(name));
+
+        if (needsUpdate) {
+            this.shareNames = shareNames;
+            this.sharesDetected = true;
+
+            this.log.info(`Detected ${shareNames.size} shares`);
+
+            // Create share count state
+            await this.writeState('shares.count',
+                { type: 'number', role: 'value', unit: '' }, shareNames.size);
+
+            // Create states for each share
+            for (const share of shares) {
+                const s = share as Record<string, unknown>;
+                const name = s.name as string | null;
+                if (!name) continue;
+
+                const sharePrefix = `shares.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+                await this.writeState(`${sharePrefix}.name`,
+                    { type: 'string', role: 'text' }, null);
+                await this.writeState(`${sharePrefix}.freeGb`,
+                    { type: 'number', role: 'value', unit: 'GB' }, null);
+                await this.writeState(`${sharePrefix}.usedGb`,
+                    { type: 'number', role: 'value', unit: 'GB' }, null);
+                await this.writeState(`${sharePrefix}.sizeGb`,
+                    { type: 'number', role: 'value', unit: 'GB' }, null);
+                await this.writeState(`${sharePrefix}.usedPercent`,
+                    { type: 'number', role: 'value.percent', unit: '%' }, null);
+                await this.writeState(`${sharePrefix}.comment`,
+                    { type: 'string', role: 'text' }, null);
+                await this.writeState(`${sharePrefix}.allocator`,
+                    { type: 'string', role: 'text' }, null);
+                await this.writeState(`${sharePrefix}.cow`,
+                    { type: 'string', role: 'text' }, null);
+                await this.writeState(`${sharePrefix}.color`,
+                    { type: 'string', role: 'text' }, null);
+            }
+        }
+
+        // Update share values
+        for (const share of shares) {
+            const s = share as Record<string, unknown>;
+            const name = s.name as string | null;
+            if (!name) continue;
+
+            const sharePrefix = `shares.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+            await this.setStateAsync(`${sharePrefix}.name`,
+                { val: name, ack: true });
+            await this.setStateAsync(`${sharePrefix}.freeGb`,
+                { val: this.kilobytesToGigabytes(s.free), ack: true });
+            await this.setStateAsync(`${sharePrefix}.usedGb`,
+                { val: this.kilobytesToGigabytes(s.used), ack: true });
+            await this.setStateAsync(`${sharePrefix}.sizeGb`,
+                { val: this.kilobytesToGigabytes(s.size), ack: true });
+
+            // Calculate usage percent (used / (used + free))
+            const usedKb = this.toNumberOrNull(s.used);
+            const freeKb = this.toNumberOrNull(s.free);
+            let usedPercent: number | null = null;
+            if (usedKb !== null && freeKb !== null && (usedKb + freeKb) > 0) {
+                usedPercent = Math.round((usedKb / (usedKb + freeKb)) * 10000) / 100;
+            }
+            await this.setStateAsync(`${sharePrefix}.usedPercent`,
+                { val: usedPercent, ack: true });
+
+            await this.setStateAsync(`${sharePrefix}.comment`,
+                { val: this.toStringOrNull(s.comment), ack: true });
+            await this.setStateAsync(`${sharePrefix}.allocator`,
+                { val: this.toStringOrNull(s.allocator), ack: true });
+            await this.setStateAsync(`${sharePrefix}.cow`,
+                { val: this.toStringOrNull(s.cow), ack: true });
+            await this.setStateAsync(`${sharePrefix}.color`,
+                { val: this.toStringOrNull(s.color), ack: true });
+        }
+    }
+
+    private async handleDynamicVms(data: QueryResult): Promise<void> {
+        // Only process VMs if vms.list is selected
+        if (!this.effectiveSelection.has('vms.list')) {
+            return;
+        }
+
+        const vms = data.vms as { domains?: unknown[] };
+        if (!vms?.domains) {
+            return;
+        }
+
+        const domains = Array.isArray(vms.domains) ? vms.domains : [];
+        const vmUuids = new Set<string>();
+
+        for (const vm of domains) {
+            const v = vm as Record<string, unknown>;
+            const uuid = v.uuid as string | null;
+            if (uuid) {
+                vmUuids.add(uuid);
+            }
+        }
+
+        // Check if we need to create new VM states
+        const needsUpdate = !this.vmsDetected ||
+            vmUuids.size !== this.vmUuids.size ||
+            ![...vmUuids].every(uuid => this.vmUuids.has(uuid));
+
+        if (needsUpdate) {
+            this.vmUuids = vmUuids;
+            this.vmsDetected = true;
+
+            this.log.info(`Detected ${vmUuids.size} VMs`);
+
+            // Create VM count state
+            await this.writeState('vms.count',
+                { type: 'number', role: 'value', unit: '' }, vmUuids.size);
+
+            // Create states for each VM
+            for (const vm of domains) {
+                const v = vm as Record<string, unknown>;
+                const name = v.name as string | null;
+                const uuid = v.uuid as string | null;
+                if (!name || !uuid) continue;
+
+                const vmPrefix = `vms.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+                await this.writeState(`${vmPrefix}.name`,
+                    { type: 'string', role: 'text' }, null);
+                await this.writeState(`${vmPrefix}.state`,
+                    { type: 'string', role: 'indicator.status' }, null);
+                await this.writeState(`${vmPrefix}.uuid`,
+                    { type: 'string', role: 'text' }, null);
+            }
+        }
+
+        // Update VM values
+        for (const vm of domains) {
+            const v = vm as Record<string, unknown>;
+            const name = v.name as string | null;
+            const uuid = v.uuid as string | null;
+            if (!name || !uuid) continue;
+
+            const vmPrefix = `vms.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+            await this.setStateAsync(`${vmPrefix}.name`,
+                { val: name, ack: true });
+            await this.setStateAsync(`${vmPrefix}.state`,
+                { val: this.toStringOrNull(v.state), ack: true });
+            await this.setStateAsync(`${vmPrefix}.uuid`,
+                { val: uuid, ack: true });
+        }
     }
 
     private bigIntToNumber(value: unknown): number | null {
