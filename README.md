@@ -2,6 +2,8 @@
 
 # ioBroker.unraid
 
+> **⚠️ Work in Progress**: This adapter is under active development. Additional data points and features are planned for future releases.
+
 [![NPM version](https://img.shields.io/npm/v/iobroker.unraid.svg)](https://www.npmjs.com/package/iobroker.unraid)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.unraid.svg)](https://www.npmjs.com/package/iobroker.unraid)
 ![Number of Installations](https://iobroker.live/badges/unraid-installed.svg)
@@ -31,6 +33,16 @@ This adapter connects ioBroker to Unraid servers via the GraphQL API to monitor 
 4. **Self-signed Certificates**: Enable if your Unraid server uses a self-signed HTTPS certificate
 5. **Data Domains**: Select which data categories to monitor (System Info, Server Status, Metrics, etc.)
 
+### Configuration Interface
+
+![Configuration](docs/de/img/ioBroker_config01.png)
+
+### Created Objects
+
+The adapter creates a structured tree of objects for the monitored data:
+
+![Objects](docs/de/img/ioBroker_Objects01.png)
+
 ## Requirements
 
 - Unraid server with GraphQL API enabled
@@ -38,6 +50,16 @@ This adapter connects ioBroker to Unraid servers via the GraphQL API to monitor 
 - Network access from ioBroker to Unraid server
 
 ## Changelog
+
+<!--
+  Placeholder for the next version (at the beginning of the line):
+  ### **WORK IN PROGRESS**
+-->
+
+### **WORK IN PROGRESS**
+
+- (ingel81) Documentation
+
 ### 0.4.0 (2025-09-21)
 
 - (ingel81) Adapter renamed to iobroker.unraid
