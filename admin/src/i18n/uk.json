@@ -1,7 +1,9 @@
 {
-    "unraid-adapter adapter settings": "Налаштування адаптера для unraid-adapter",
-    "baseUrl": "IP/URL Unraid",
-    "baseUrl_help": "Приклад: https://tower.local або http://192.168.1.10 (вкажіть протокол і за потреби порт)",
-    "apiToken": "API-токен",
-    "apiToken_help": "Згенеруйте токен у веб-інтерфейсі Unraid та вставте його сюди"
+    "unraid-adapter adapter settings": "Adapter settings for unraid-adapter",
+    "baseUrl": "Unraid IP/URL",
+    "baseUrl_help": "Example: https://tower.local or http://192.168.1.10 (include protocol and port if required)",
+    "apiToken": "API token",
+    "apiToken_help": "Generate a token in the Unraid web UI and paste it here",
+    "allowSelfSigned": "Allow self-signed certificates",
+    "allowSelfSigned_help": "Enable only if your Unraid server uses a self-signed HTTPS certificate"
 }

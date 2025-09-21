@@ -5,14 +5,14 @@ Date: 2025-02-14
 ## Endpoint & Authentication
 
 - **Endpoint**: `POST http://192.168.0.30/graphql`
-- **Auth header**: `Authorization: Bearer <token>` (currently using the admin-provided token)
+- **Auth header**: `x-api-key: <token>` (matches the token issued in the Unraid admin UI)
 - **Content type**: `application/json`
 - Example request skeleton:
 
   ```bash
   curl -X POST \
        -H "Content-Type: application/json" \
-       -H "Authorization: Bearer <token>" \
+       -H "x-api-key: <token>" \
        --data '{"query":"query { info { time } }"}' \
        http://192.168.0.30/graphql
   ```
@@ -77,11 +77,13 @@ All Query fields require the `READ_ANY` action combined with the relevant resour
 Reference query covering the main data we intend to model:
 
 ```graphql
+# Simplified reference – the adapter now composes this dynamically
 query UnraidOverview {
   info {
     time
     os { name version }
     versions { unraid }
+    # Some firmware revisions omit os/version/hardware – the adapter drops them on 400 errors
   }
   server { name status lanip localurl }
   metrics {
@@ -109,10 +111,10 @@ query UnraidOverview {
 
 ## Implementation Considerations
 
-- Build a GraphQL helper around `fetch` (or Axios) with:
-  - Configured base URL + token from adapter admin UI
+- Build a GraphQL helper around `fetch` with:
+  - Configured base URL + token from adapter admin UI (sent via `x-api-key`)
   - Optional `skipCache` toggles (Docker networks/containers support it)
-  - Structured error logging and retry/backoff on network issues
+  - Structured error logging, retry/backoff, and schema fallback when Unraid omits optional fields
 - Schedule polling intervals per domain (e.g. fast metrics, slower parity history) to avoid overloading the API.
 - Map results into ioBroker states grouped by domain:
   - `info.*`, `metrics.*`, `services.<name>.online`
@@ -127,6 +129,6 @@ query UnraidOverview {
 2. Design ioBroker object/state hierarchy per domain.
 3. Implement the shared GraphQL request infrastructure.
 4. Add polling logic + state updates incrementally (starting with system metrics, then storage, workloads, UPS).
-5. Extend admin UI with polling interval settings once scopes are confirmed.
+5. Extend admin UI with polling interval settings once scopes are confirmed and keep the domain selector in sync with GraphQL capabilities (log warnings when the schema rejects fields).
 
 These notes should serve as the reference point when we start the implementation planning session.
