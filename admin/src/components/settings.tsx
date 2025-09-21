@@ -339,20 +339,21 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                         helperText: I18n.t('apiToken_help'),
                         autoComplete: 'off',
                     })}
-                    <FormControlLabel
-                        className={classes.controlElement}
-                        control={
-                            <Checkbox
-                                color="primary"
-                                checked={!!native.allowSelfSigned}
-                                onChange={(event, checked) => this.props.onChange('allowSelfSigned', checked)}
-                            />
-                        }
-                        label={I18n.t('allowSelfSigned')}
-                    />
-                    <Typography variant="caption" color="textSecondary" className={classes.controlElement}>
-                        {I18n.t('allowSelfSigned_help')}
-                    </Typography>
+                    <div className={classes.controlElement}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    color="primary"
+                                    checked={!!native.allowSelfSigned}
+                                    onChange={(event, checked) => this.props.onChange('allowSelfSigned', checked)}
+                                />
+                            }
+                            label={I18n.t('allowSelfSigned')}
+                        />
+                        <Typography variant="caption" color="textSecondary" style={{ display: 'block', marginLeft: 32 }}>
+                            {I18n.t('allowSelfSigned_help')}
+                        </Typography>
+                    </div>
                 </div>
 
                 <Divider />
