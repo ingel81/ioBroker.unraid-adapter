@@ -1,88 +1,112 @@
 {
-    "common": {
-        "name": "unraid",
-        "version": "0.4.0",
-        "news": {
-            "0.4.0": {
-                "en": "Adapter renamed to iobroker.unraid",
-                "de": "Adapter umbenannt in iobroker.unraid",
-                "ru": "Адаптер был переименован в iobroker.unraid",
-                "pt": "Adaptador renomeado para iobroker.unraid",
-                "nl": "Adapter hernoemd naar iobroker.unraid",
-                "fr": "Adaptateur renommé en iobroker.unraid",
-                "it": "Adattatore rinominato in iobroker.unraid",
-                "es": "Adaptador renombrado a iobroker.unraid",
-                "pl": "Adapter został przemianowany na iobroker.unraid",
-                "uk": "Адаптер перейменований на iobroker.unraid",
-                "zh-cn": "适配器已更名为iobroker.unraid"
-            }
-        },
-        "titleLang": {
-            "en": "Unraid",
-            "de": "Unraid",
-            "ru": "Не влетел из -за",
-            "pt": "Sem medo",
-            "nl": "Niet",
-            "fr": "Se détendre",
-            "it": "Non corretto",
-            "es": "Sin identificación",
-            "pl": "URAID",
-            "uk": "Безпідставний",
-            "zh-cn": "无关"
-        },
-        "desc": {
-            "en": "Monitor and control Unraid servers",
-            "de": "Überwachung und Steuerung von Unraid-Servern",
-            "ru": "Адаптер",
-            "pt": "UNARAD-ADAPTER",
-            "nl": "niet-adapter",
-            "fr": "adaptateur non",
-            "it": "Adattatore non corretto",
-            "es": "adaptador sin identificación",
-            "pl": "Adraid-adapter",
-            "uk": "бездоганний адаптер",
-            "zh-cn": "无关的适配器"
-        },
-        "authors": ["ingel81 <ingel81@sgeht.net>"],
-        "keywords": ["unraid", "monitoring", "unraid-api"],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "unraid.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/ingel81/ioBroker.unraid/master/admin/unraid.png",
-        "readme": "https://github.com/ingel81/ioBroker.unraid/blob/master/README.md",
-        "loglevel": "info",
-        "tier": 3,
-        "mode": "daemon",
-        "type": "infrastructure",
-        "compact": true,
-        "connectionType": "local",
-        "dataSource": "poll",
-        "adminUI": {
-            "config": "materialize"
-        },
-        "eraseOnUpload": true,
-        "dependencies": [
-            {
-                "js-controller": ">=6.0.11"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=6.0.0"
-            }
-        ]
+  "common": {
+    "name": "unraid",
+    "version": "0.4.1",
+    "news": {
+      "0.4.1": {
+        "en": "Documentation",
+        "de": "Dokumentation",
+        "ru": "Документация",
+        "pt": "Documentação",
+        "nl": "Documentatie",
+        "fr": "Documentation",
+        "it": "Documentazione",
+        "es": "Documentación",
+        "pl": "Dokumentacja",
+        "uk": "Документація",
+        "zh-cn": "文档"
+      },
+      "0.4.0": {
+        "en": "Adapter renamed to iobroker.unraid",
+        "de": "Adapter umbenannt in iobroker.unraid",
+        "ru": "Адаптер был переименован в iobroker.unraid",
+        "pt": "Adaptador renomeado para iobroker.unraid",
+        "nl": "Adapter hernoemd naar iobroker.unraid",
+        "fr": "Adaptateur renommé en iobroker.unraid",
+        "it": "Adattatore rinominato in iobroker.unraid",
+        "es": "Adaptador renombrado a iobroker.unraid",
+        "pl": "Adapter został przemianowany na iobroker.unraid",
+        "uk": "Адаптер перейменований на iobroker.unraid",
+        "zh-cn": "适配器已更名为iobroker.unraid"
+      }
     },
-    "native": {
-        "baseUrl": "",
-        "apiToken": "",
-        "pollIntervalSeconds": 60,
-        "allowSelfSigned": false,
-        "enabledDomains": ["info.time", "server.status", "metrics.cpu", "metrics.memory"]
+    "titleLang": {
+      "en": "Unraid",
+      "de": "Unraid",
+      "ru": "Не влетел из -за",
+      "pt": "Sem medo",
+      "nl": "Niet",
+      "fr": "Se détendre",
+      "it": "Non corretto",
+      "es": "Sin identificación",
+      "pl": "URAID",
+      "uk": "Безпідставний",
+      "zh-cn": "无关"
     },
-    "objects": [],
-    "instanceObjects": []
+    "desc": {
+      "en": "Monitor and control Unraid servers",
+      "de": "Überwachung und Steuerung von Unraid-Servern",
+      "ru": "Адаптер",
+      "pt": "UNARAD-ADAPTER",
+      "nl": "niet-adapter",
+      "fr": "adaptateur non",
+      "it": "Adattatore non corretto",
+      "es": "adaptador sin identificación",
+      "pl": "Adraid-adapter",
+      "uk": "бездоганний адаптер",
+      "zh-cn": "无关的适配器"
+    },
+    "authors": [
+      "ingel81 <ingel81@sgeht.net>"
+    ],
+    "keywords": [
+      "unraid",
+      "monitoring",
+      "unraid-api"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "unraid.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/ingel81/ioBroker.unraid/master/admin/unraid.png",
+    "readme": "https://github.com/ingel81/ioBroker.unraid/blob/master/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "infrastructure",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "materialize"
+    },
+    "eraseOnUpload": true,
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=6.0.0"
+      }
+    ]
+  },
+  "native": {
+    "baseUrl": "",
+    "apiToken": "",
+    "pollIntervalSeconds": 60,
+    "allowSelfSigned": false,
+    "enabledDomains": [
+      "info.time",
+      "server.status",
+      "metrics.cpu",
+      "metrics.memory"
+    ]
+  },
+  "objects": [],
+  "instanceObjects": []
 }
