@@ -15,58 +15,6 @@
                 "pl": "Testowanie wersji z wydaniem w npm, ponowione2",
                 "uk": "Тестування релізу за допомогою npm, перезавантаження2",
                 "zh-cn": "使用npm重新加载的发布测试2"
-            },
-            "0.2.1": {
-                "en": "Release testing with npm, reloaded",
-                "de": "Versionstests mit npm, neu gestartet",
-                "ru": "Тестирование релиза с использованием npm, перезагружено",
-                "pt": "Teste de lançamento com npm, recarregado",
-                "nl": "Release testen met npm, opnieuw opgestart",
-                "fr": "Test de publication avec npm, rechargé",
-                "it": "Test di rilascio con npm, ricaricato",
-                "es": "Pruebas de lanzamiento con npm, recargadas",
-                "pl": "Testowanie wydania za pomocą npm, ponownie wykonane",
-                "uk": "Тестування релізу з використанням npm, перезавантажено",
-                "zh-cn": "重新加载npm的发布测试"
-            },
-            "0.2.0": {
-                "en": "Release testing with npm",
-                "de": "Tests für die Version mit npm durchführen",
-                "ru": "Тестирование релиза с помощью npm",
-                "pt": "Teste de versão com npm",
-                "nl": "Uitvoeren van releasetest met npm",
-                "fr": "Test de publication avec npm",
-                "it": "Test di rilascio con npm",
-                "es": "Pruebas de lanzamiento con npm",
-                "pl": "Testowanie wydania za pomocą npm",
-                "uk": "Тестування релізу за допомогою npm",
-                "zh-cn": "使用npm进行发布测试"
-            },
-            "0.1.0": {
-                "en": "first data points of Unraid Api included\nmigrated everything to Typescript",
-                "de": "Erste Datensätze der Unraid API hinzugefügt.\nAlles auf Typescript migriert",
-                "ru": "первые данные точек API Unraid были добавлены\nперевели все на TypeScript",
-                "pt": "Primeiros pontos de dados da API Unraid incluídos\nmigrou tudo para Typescript",
-                "nl": "eerste gegevenspunten van Unraid Api toegevoegd\nAlles gemigreerd naar Typescript",
-                "fr": "Les premiers points de données de l'API Unraid sont maintenant inclus.\ntout a été migré vers TypeScript",
-                "it": "Primi dati punti dell'API Unraid inclusi\nmigrato tutto in Typescript",
-                "es": "Primeros puntos de datos incluidos en la API de Unraid\nmigrado todo a Typescript",
-                "pl": "Pierwsze punkty danych Unraid Api zostały uwzględnione\nprzemigrowano wszystko do Typescript",
-                "uk": "включено перші дані точек API Unraid\nперенесено все на TypeScript",
-                "zh-cn": "首次包括 Unraid API 的数据点\n将所有内容迁移至TypeScript"
-            },
-            "0.0.1": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "uk": "Початкова версія",
-                "zh-cn": "首次出版"
             }
         },
         "titleLang": {
