@@ -1,5 +1,5 @@
 import React from 'react';
-import { withStyles, createStyles, type WithStyles } from '@material-ui/core/styles';
+import { withStyles, createStyles, type WithStyles, type Theme } from '@material-ui/core/styles';
 import TextField, { type TextFieldProps } from '@material-ui/core/TextField';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -18,7 +18,7 @@ import {
     domainNodeById,
 } from '../../../src/shared/unraid-domains';
 
-const styles = (theme: any) =>
+const styles = (theme: Theme) =>
     createStyles({
         tab: {
             maxWidth: 800,
