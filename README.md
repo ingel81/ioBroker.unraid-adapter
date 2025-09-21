@@ -111,26 +111,10 @@ The ioBroker.admin interface will then be available at http://localhost:8081/
 Please refer to the [`dev-server` documentation](https://github.com/ioBroker/dev-server#command-line) for more details.
 
 ## Changelog
+
 ### 0.2.2 (2025-09-21)
 
 - (ingel81) Release testing with npm, reloaded2
-
-### 0.2.1 (2025-09-21)
-
-- (ingel81) Release testing with npm, reloaded
-
-### 0.2.0 (2025-09-21)
-
-- (ingel81) Release testing with npm
-
-### 0.1.0 (2025-09-21)
-
-- (ingel81) first data points of Unraid Api included
-- (ingel81) migrated everything to Typescript
-
-### 0.0.1 (2025-09-21)
-
-- (ingel81) initial release
 
 ## License
 

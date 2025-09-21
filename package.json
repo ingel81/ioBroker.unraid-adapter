@@ -9,6 +9,7 @@
   "homepage": "https://github.com/ingel81/ioBroker.unraid-adapter",
   "license": "MIT",
   "keywords": [
+    "ioBroker",
     "unraid",
     "monitoring",
     "unraid-api"

@@ -1,152 +1,140 @@
 {
-  "common": {
-    "name": "unraid-adapter",
-    "version": "0.2.2",
-    "news": {
-      "0.2.2": {
-        "en": "Release testing with npm, reloaded2",
-        "de": "Veröffentlichungstest mit npm, neu geladen2",
-        "ru": "Тестирование релиза с использованием npm, перезагрузка2",
-        "pt": "Teste de lançamento com npm, reloaded2",
-        "nl": "Uitvoeren van release tests met npm, reloaded2",
-        "fr": "Test de publication avec npm, reloaded2",
-        "it": "Rilascio di testing con npm, reloaded2",
-        "es": "Pruebas de lanzamiento con npm, reloaded2",
-        "pl": "Testowanie wersji z wydaniem w npm, ponowione2",
-        "uk": "Тестування релізу за допомогою npm, перезавантаження2",
-        "zh-cn": "使用npm重新加载的发布测试2"
-      },
-      "0.2.1": {
-        "en": "Release testing with npm, reloaded",
-        "de": "Versionstests mit npm, neu gestartet",
-        "ru": "Тестирование релиза с использованием npm, перезагружено",
-        "pt": "Teste de lançamento com npm, recarregado",
-        "nl": "Release testen met npm, opnieuw opgestart",
-        "fr": "Test de publication avec npm, rechargé",
-        "it": "Test di rilascio con npm, ricaricato",
-        "es": "Pruebas de lanzamiento con npm, recargadas",
-        "pl": "Testowanie wydania za pomocą npm, ponownie wykonane",
-        "uk": "Тестування релізу з використанням npm, перезавантажено",
-        "zh-cn": "重新加载npm的发布测试"
-      },
-      "0.2.0": {
-        "en": "Release testing with npm",
-        "de": "Tests für die Version mit npm durchführen",
-        "ru": "Тестирование релиза с помощью npm",
-        "pt": "Teste de versão com npm",
-        "nl": "Uitvoeren van releasetest met npm",
-        "fr": "Test de publication avec npm",
-        "it": "Test di rilascio con npm",
-        "es": "Pruebas de lanzamiento con npm",
-        "pl": "Testowanie wydania za pomocą npm",
-        "uk": "Тестування релізу за допомогою npm",
-        "zh-cn": "使用npm进行发布测试"
-      },
-      "0.1.0": {
-        "en": "first data points of Unraid Api included\nmigrated everything to Typescript",
-        "de": "Erste Datensätze der Unraid API hinzugefügt.\nAlles auf Typescript migriert",
-        "ru": "первые данные точек API Unraid были добавлены\nперевели все на TypeScript",
-        "pt": "Primeiros pontos de dados da API Unraid incluídos\nmigrou tudo para Typescript",
-        "nl": "eerste gegevenspunten van Unraid Api toegevoegd\nAlles gemigreerd naar Typescript",
-        "fr": "Les premiers points de données de l'API Unraid sont maintenant inclus.\ntout a été migré vers TypeScript",
-        "it": "Primi dati punti dell'API Unraid inclusi\nmigrato tutto in Typescript",
-        "es": "Primeros puntos de datos incluidos en la API de Unraid\nmigrado todo a Typescript",
-        "pl": "Pierwsze punkty danych Unraid Api zostały uwzględnione\nprzemigrowano wszystko do Typescript",
-        "uk": "включено перші дані точек API Unraid\nперенесено все на TypeScript",
-        "zh-cn": "首次包括 Unraid API 的数据点\n将所有内容迁移至TypeScript"
-      },
-      "0.0.1": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Начальная версия",
-        "pt": "lançamento inicial",
-        "nl": "Eerste uitgave",
-        "fr": "Première version",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsze wydanie",
-        "uk": "Початкова версія",
-        "zh-cn": "首次出版"
-      }
+    "common": {
+        "name": "unraid-adapter",
+        "version": "0.2.2",
+        "news": {
+            "0.2.2": {
+                "en": "Release testing with npm, reloaded2",
+                "de": "Veröffentlichungstest mit npm, neu geladen2",
+                "ru": "Тестирование релиза с использованием npm, перезагрузка2",
+                "pt": "Teste de lançamento com npm, reloaded2",
+                "nl": "Uitvoeren van release tests met npm, reloaded2",
+                "fr": "Test de publication avec npm, reloaded2",
+                "it": "Rilascio di testing con npm, reloaded2",
+                "es": "Pruebas de lanzamiento con npm, reloaded2",
+                "pl": "Testowanie wersji z wydaniem w npm, ponowione2",
+                "uk": "Тестування релізу за допомогою npm, перезавантаження2",
+                "zh-cn": "使用npm重新加载的发布测试2"
+            },
+            "0.2.1": {
+                "en": "Release testing with npm, reloaded",
+                "de": "Versionstests mit npm, neu gestartet",
+                "ru": "Тестирование релиза с использованием npm, перезагружено",
+                "pt": "Teste de lançamento com npm, recarregado",
+                "nl": "Release testen met npm, opnieuw opgestart",
+                "fr": "Test de publication avec npm, rechargé",
+                "it": "Test di rilascio con npm, ricaricato",
+                "es": "Pruebas de lanzamiento con npm, recargadas",
+                "pl": "Testowanie wydania za pomocą npm, ponownie wykonane",
+                "uk": "Тестування релізу з використанням npm, перезавантажено",
+                "zh-cn": "重新加载npm的发布测试"
+            },
+            "0.2.0": {
+                "en": "Release testing with npm",
+                "de": "Tests für die Version mit npm durchführen",
+                "ru": "Тестирование релиза с помощью npm",
+                "pt": "Teste de versão com npm",
+                "nl": "Uitvoeren van releasetest met npm",
+                "fr": "Test de publication avec npm",
+                "it": "Test di rilascio con npm",
+                "es": "Pruebas de lanzamiento con npm",
+                "pl": "Testowanie wydania za pomocą npm",
+                "uk": "Тестування релізу за допомогою npm",
+                "zh-cn": "使用npm进行发布测试"
+            },
+            "0.1.0": {
+                "en": "first data points of Unraid Api included\nmigrated everything to Typescript",
+                "de": "Erste Datensätze der Unraid API hinzugefügt.\nAlles auf Typescript migriert",
+                "ru": "первые данные точек API Unraid были добавлены\nперевели все на TypeScript",
+                "pt": "Primeiros pontos de dados da API Unraid incluídos\nmigrou tudo para Typescript",
+                "nl": "eerste gegevenspunten van Unraid Api toegevoegd\nAlles gemigreerd naar Typescript",
+                "fr": "Les premiers points de données de l'API Unraid sont maintenant inclus.\ntout a été migré vers TypeScript",
+                "it": "Primi dati punti dell'API Unraid inclusi\nmigrato tutto in Typescript",
+                "es": "Primeros puntos de datos incluidos en la API de Unraid\nmigrado todo a Typescript",
+                "pl": "Pierwsze punkty danych Unraid Api zostały uwzględnione\nprzemigrowano wszystko do Typescript",
+                "uk": "включено перші дані точек API Unraid\nперенесено все на TypeScript",
+                "zh-cn": "首次包括 Unraid API 的数据点\n将所有内容迁移至TypeScript"
+            },
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "uk": "Початкова версія",
+                "zh-cn": "首次出版"
+            }
+        },
+        "titleLang": {
+            "en": "Unraid",
+            "de": "Unraid",
+            "ru": "Не влетел из -за",
+            "pt": "Sem medo",
+            "nl": "Niet",
+            "fr": "Se détendre",
+            "it": "Non corretto",
+            "es": "Sin identificación",
+            "pl": "URAID",
+            "uk": "Безпідставний",
+            "zh-cn": "无关"
+        },
+        "desc": {
+            "en": "unraid-adapter",
+            "de": "Unraid-Adapter",
+            "ru": "Адаптер",
+            "pt": "UNARAD-ADAPTER",
+            "nl": "niet-adapter",
+            "fr": "adaptateur non",
+            "it": "Adattatore non corretto",
+            "es": "adaptador sin identificación",
+            "pl": "Adraid-adapter",
+            "uk": "бездоганний адаптер",
+            "zh-cn": "无关的适配器"
+        },
+        "authors": ["ingel81 <ingel81@sgeht.net>"],
+        "keywords": ["unraid", "monitoring", "unraid-api"],
+        "licenseInformation": {
+            "type": "free",
+            "license": "MIT"
+        },
+        "platform": "Javascript/Node.js",
+        "icon": "unraid-adapter.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/ingel81/ioBroker.unraid-adapter/master/admin/unraid-adapter.png",
+        "readme": "https://github.com/ingel81/ioBroker.unraid-adapter/blob/master/README.md",
+        "loglevel": "info",
+        "tier": 3,
+        "mode": "daemon",
+        "type": "infrastructure",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "materialize"
+        },
+        "eraseOnUpload": true,
+        "dependencies": [
+            {
+                "js-controller": ">=6.0.11"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=6.0.0"
+            }
+        ]
     },
-    "titleLang": {
-      "en": "Unraid",
-      "de": "Unraid",
-      "ru": "Не влетел из -за",
-      "pt": "Sem medo",
-      "nl": "Niet",
-      "fr": "Se détendre",
-      "it": "Non corretto",
-      "es": "Sin identificación",
-      "pl": "URAID",
-      "uk": "Безпідставний",
-      "zh-cn": "无关"
+    "native": {
+        "baseUrl": "",
+        "apiToken": "",
+        "pollIntervalSeconds": 60,
+        "allowSelfSigned": false,
+        "enabledDomains": ["info.time", "server.status", "metrics.cpu", "metrics.memory"]
     },
-    "desc": {
-      "en": "unraid-adapter",
-      "de": "Unraid-Adapter",
-      "ru": "Адаптер",
-      "pt": "UNARAD-ADAPTER",
-      "nl": "niet-adapter",
-      "fr": "adaptateur non",
-      "it": "Adattatore non corretto",
-      "es": "adaptador sin identificación",
-      "pl": "Adraid-adapter",
-      "uk": "бездоганний адаптер",
-      "zh-cn": "无关的适配器"
-    },
-    "authors": [
-      "ingel81 <ingel81@sgeht.net>"
-    ],
-    "keywords": [
-      "ioBroker",
-      "template",
-      "Smart Home",
-      "home automation"
-    ],
-    "licenseInformation": {
-      "type": "free",
-      "license": "MIT"
-    },
-    "platform": "Javascript/Node.js",
-    "icon": "unraid-adapter.png",
-    "enabled": true,
-    "extIcon": "https://raw.githubusercontent.com/ingel81/ioBroker.unraid-adapter/master/admin/unraid-adapter.png",
-    "readme": "https://github.com/ingel81/ioBroker.unraid-adapter/blob/master/README.md",
-    "loglevel": "info",
-    "tier": 3,
-    "mode": "daemon",
-    "type": "infrastructure",
-    "compact": true,
-    "connectionType": "local",
-    "dataSource": "poll",
-    "adminUI": {
-      "config": "materialize"
-    },
-    "eraseOnUpload": true,
-    "dependencies": [
-      {
-        "js-controller": ">=6.0.11"
-      }
-    ],
-    "globalDependencies": [
-      {
-        "admin": ">=6.0.0"
-      }
-    ]
-  },
-  "native": {
-    "baseUrl": "",
-    "apiToken": "",
-    "pollIntervalSeconds": 60,
-    "allowSelfSigned": false,
-    "enabledDomains": [
-      "info.time",
-      "server.status",
-      "metrics.cpu",
-      "metrics.memory"
-    ]
-  },
-  "objects": [],
-  "instanceObjects": []
+    "objects": [],
+    "instanceObjects": []
 }
