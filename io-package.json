@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unraid",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "news": {
+      "0.5.2": {
+        "en": "Documentation\nMinor admin page improvements",
+        "de": "Dokumentation\nMinor Admin Seite Verbesserungen",
+        "ru": "Документация\nУлучшение страницы Minor Admin",
+        "pt": "Documentação\nMelhorias menores na página de administração",
+        "nl": "Documentatie\nMinor admin pagina verbeteringen",
+        "fr": "Documentation\nAméliorations mineures des pages administratives",
+        "it": "Documentazione\nMiglioramento della pagina di amministrazione minore",
+        "es": "Documentación\nMejoras de la página de administración menor",
+        "pl": "Dokumentacja\nNiewielkie ulepszenia strony administratora",
+        "uk": "Документація\nНормативно-правова база",
+        "zh-cn": "文档\n小管理页面改进"
+      },
       "0.5.1": {
         "en": "ESLint9 Migration\nCode refactor",
         "de": "ESLint9 Migration\nCode-Refacter",
