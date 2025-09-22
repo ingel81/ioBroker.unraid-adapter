@@ -1,26 +1,52 @@
 import type { ObservableSubscription } from '@apollo/client/core';
 import { UnraidApolloClient } from './apollo-client';
 
+/**
+ * Configuration options for the subscription manager
+ */
 export interface SubscriptionManagerOptions {
+    /** Apollo client instance for GraphQL operations */
     apolloClient: UnraidApolloClient;
+    /** Callback to update ioBroker state values */
     onStateUpdate: (id: string, value: unknown) => Promise<void>;
+    /** Optional error handler for subscription errors */
     onError?: (error: Error) => void;
+    /** Optional callback when WebSocket connection is lost */
     onConnectionLost?: () => void;
+    /** Optional callback when WebSocket connection is restored */
     onConnectionRestored?: () => void;
 }
 
+/**
+ * Manages GraphQL subscriptions for real-time Unraid metrics.
+ * Handles automatic reconnection and update throttling.
+ */
 export class SubscriptionManager {
+    /** Apollo client for GraphQL operations */
     private apolloClient: UnraidApolloClient;
+    /** Map of active subscriptions by name */
     private subscriptions: Map<string, ObservableSubscription> = new Map();
+    /** Callback to update ioBroker states */
     private onStateUpdate: (id: string, value: unknown) => Promise<void>;
+    /** Error handler callback */
     private onError?: (error: Error) => void;
+    /** Connection lost callback */
     private onConnectionLost?: () => void;
+    /** Connection restored callback */
     private onConnectionRestored?: () => void;
+    /** Timer for reconnection attempts */
     private reconnectTimer?: NodeJS.Timeout;
+    /** Current connection status */
     private isConnected = false;
+    /** Map tracking last update time for each metric */
     private lastUpdateTimes: Map<string, number> = new Map();
+    /** Minimum time between updates for the same metric (milliseconds) */
     private readonly UPDATE_THROTTLE_MS = 1000; // Throttle updates to max 1 per second per metric
 
+    /**
+     * Creates a new subscription manager instance
+     * @param options - Configuration options for the manager
+     */
     constructor(options: SubscriptionManagerOptions) {
         this.apolloClient = options.apolloClient;
         this.onStateUpdate = options.onStateUpdate;
@@ -30,7 +56,9 @@ export class SubscriptionManager {
     }
 
     /**
-     * Start subscriptions for CPU and Memory metrics
+     * Start all available subscriptions for Unraid metrics.
+     * Automatically discovers available subscriptions via introspection.
+     * @returns Promise resolving to true if at least one subscription started successfully
      */
     async start(): Promise<boolean> {
         try {
@@ -97,7 +125,9 @@ export class SubscriptionManager {
 
 
     /**
-     * Subscribe to CPU metrics only
+     * Subscribe to CPU metrics updates.
+     * Receives real-time CPU usage percentage.
+     * @returns Promise that resolves when subscription is created
      */
     private async subscribeToCpu(): Promise<void> {
         const subscription = this.apolloClient.subscribe<{ systemMetricsCpu: { percentTotal?: number } }>(`
@@ -123,7 +153,9 @@ export class SubscriptionManager {
     }
 
     /**
-     * Subscribe to Memory metrics only
+     * Subscribe to memory metrics updates.
+     * Receives real-time memory usage data including total, used, free, and percentage.
+     * @returns Promise that resolves when subscription is created
      */
     private async subscribeToMemory(): Promise<void> {
         const subscription = this.apolloClient.subscribe<{ systemMetricsMemory: { percentTotal?: number; total?: number; used?: number; free?: number } }>(`
@@ -152,7 +184,10 @@ export class SubscriptionManager {
     }
 
     /**
-     * Subscribe to Array status updates
+     * Subscribe to array status updates.
+     * Receives real-time disk array status including disk health, parity, and capacity.
+     * Note: Currently broken in Unraid API (returns null despite being non-nullable).
+     * @returns Promise that resolves when subscription is created
      */
     private async subscribeToArray(): Promise<void> {
         const subscription = this.apolloClient.subscribe<{ arraySubscription: unknown }>(`
@@ -248,7 +283,9 @@ export class SubscriptionManager {
     }
 
     /**
-     * Subscribe to Server status updates
+     * Subscribe to server status updates.
+     * Receives real-time server status including IP addresses and URLs.
+     * @returns Promise that resolves when subscription is created
      */
     private async subscribeToServers(): Promise<void> {
         const subscription = this.apolloClient.subscribe<{ serversSubscription: unknown }>(`
@@ -279,7 +316,10 @@ export class SubscriptionManager {
 
 
     /**
-     * Handle CPU update with throttling
+     * Handle incoming CPU metric updates with throttling.
+     * Updates the ioBroker state if throttle time has passed.
+     * @param cpu - CPU metrics object containing usage percentage
+     * @returns Promise that resolves when state is updated
      */
     private async handleCpuUpdate(cpu: { percentTotal?: number }): Promise<void> {
         if (await this.shouldUpdate('cpu.percentTotal')) {
@@ -288,7 +328,10 @@ export class SubscriptionManager {
     }
 
     /**
-     * Handle Memory update with throttling
+     * Handle incoming memory metric updates with throttling.
+     * Converts bytes to GB and updates multiple ioBroker states.
+     * @param memory - Memory metrics object containing usage data
+     * @returns Promise that resolves when all states are updated
      */
     private async handleMemoryUpdate(memory: { percentTotal?: number; total?: number; used?: number; free?: number }): Promise<void> {
         const updates: Array<{ id: string; value: unknown }> = [];
@@ -319,7 +362,10 @@ export class SubscriptionManager {
     }
 
     /**
-     * Check if we should update a metric (throttling)
+     * Check if a metric should be updated based on throttling rules.
+     * Prevents excessive updates by enforcing minimum time between updates.
+     * @param metricId - Unique identifier for the metric
+     * @returns Promise resolving to true if update should proceed
      */
     private async shouldUpdate(metricId: string): Promise<boolean> {
         const now = Date.now();
@@ -334,7 +380,9 @@ export class SubscriptionManager {
     }
 
     /**
-     * Handle subscription error
+     * Handle subscription errors and trigger reconnection.
+     * Notifies callbacks and schedules automatic reconnection attempt.
+     * @param error - The error that occurred in the subscription
      */
     private handleError(error: Error): void {
         console.error('Subscription error:', error);
@@ -350,7 +398,9 @@ export class SubscriptionManager {
     }
 
     /**
-     * Handle subscription completion
+     * Handle subscription completion event.
+     * Removes subscription from active list and triggers reconnection if needed.
+     * @param subscriptionName - Name of the completed subscription
      */
     private handleComplete(subscriptionName: string): void {
         console.log(`Subscription ${subscriptionName} completed`);
@@ -364,7 +414,8 @@ export class SubscriptionManager {
     }
 
     /**
-     * Schedule a reconnection attempt
+     * Schedule an automatic reconnection attempt.
+     * Retries connection after 5 seconds, with continuous retry on failure.
      */
     private scheduleReconnect(): void {
         if (this.reconnectTimer) {
@@ -382,7 +433,9 @@ export class SubscriptionManager {
     }
 
     /**
-     * Stop all subscriptions
+     * Stop all active subscriptions and clear internal state.
+     * Cancels any pending reconnection attempts.
+     * @returns Promise that resolves when all subscriptions are stopped
      */
     async stop(): Promise<void> {
         if (this.reconnectTimer) {
@@ -401,14 +454,16 @@ export class SubscriptionManager {
     }
 
     /**
-     * Check if subscriptions are active
+     * Check if the subscription manager has active subscriptions.
+     * @returns True if connected and has active subscriptions
      */
     isActive(): boolean {
         return this.isConnected && this.subscriptions.size > 0;
     }
 
     /**
-     * Get list of active subscription names
+     * Get list of currently active subscription names.
+     * @returns Array of subscription names (e.g., ['cpu', 'memory', 'servers'])
      */
     getActiveSubscriptions(): string[] {
         return Array.from(this.subscriptions.keys());

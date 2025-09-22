@@ -15,20 +15,40 @@ import {
     type StateMapping,
 } from './shared/unraid-domains';
 
+/**
+ * Adapter configuration settings from the admin interface
+ */
 type AdapterSettings = {
+    /** Base URL of the Unraid server */
     baseUrl: string;
+    /** API token for Unraid authentication */
     apiToken: string;
+    /** Interval between polling requests in seconds */
     pollIntervalSeconds: number;
+    /** Allow self-signed SSL certificates */
     allowSelfSigned: boolean;
+    /** List of enabled domain IDs for data collection */
     enabledDomains: DomainId[];
+    /** Whether to use WebSocket subscriptions (experimental) */
     useSubscriptions?: boolean;
 };
 
+/**
+ * Result type for GraphQL queries
+ */
 type QueryResult = Record<string, unknown>;
 
+/**
+ * Builder class for constructing GraphQL selection queries.
+ * Merges multiple domain selections into a single optimized query.
+ */
 class GraphQLSelectionBuilder {
     private readonly roots = new Map<string, FieldNode>();
 
+    /**
+     * Add multiple root selections to the query builder
+     * @param selections - Array of root selections to add
+     */
     public addSelections(selections: readonly RootSelection[]): void {
         for (const selection of selections) {
             if (!selection.fields.length) {
@@ -39,6 +59,10 @@ class GraphQLSelectionBuilder {
         }
     }
 
+    /**
+     * Build the complete GraphQL query string
+     * @returns The formatted GraphQL query or null if no selections
+     */
     public build(): string | null {
         if (!this.roots.size) {
             return null;
@@ -63,6 +87,11 @@ class GraphQLSelectionBuilder {
         return `query UnraidAdapterFetch {\n${queryBody}\n}`;
     }
 
+    /**
+     * Get or create a root node in the selection tree
+     * @param root - Name of the root field
+     * @returns The field node for the root
+     */
     private getOrCreateRoot(root: string): FieldNode {
         const existing = this.roots.get(root);
         if (existing) {
@@ -73,6 +102,11 @@ class GraphQLSelectionBuilder {
         return node;
     }
 
+    /**
+     * Recursively add field specifications to a target node
+     * @param target - Target node to add fields to
+     * @param fields - Field specifications to add
+     */
     private addFields(target: FieldNode, fields: readonly FieldSpec[]): void {
         for (const field of fields) {
             let child = target.get(field.name);
@@ -86,6 +120,12 @@ class GraphQLSelectionBuilder {
         }
     }
 
+    /**
+     * Recursively print a field node tree as GraphQL syntax
+     * @param node - Node to print
+     * @param indent - Current indentation level
+     * @returns Formatted GraphQL selection string
+     */
     private printNode(node: FieldNode, indent: number): string {
         if (!node.size) {
             return '';
@@ -109,8 +149,15 @@ class GraphQLSelectionBuilder {
     }
 }
 
+/**
+ * Recursive tree structure for GraphQL field selections
+ */
 type FieldNode = Map<string, FieldNode>;
 
+/**
+ * Main adapter class for connecting ioBroker to Unraid servers.
+ * Manages GraphQL polling, WebSocket subscriptions, and state updates.
+ */
 class UnraidAdapter extends Adapter {
     private pollIntervalMs = 60000;
     private pollTimer?: ioBroker.Timeout;
@@ -150,6 +197,10 @@ class UnraidAdapter extends Adapter {
     private vmsDetected = false;
     private vmUuids: Set<string> = new Set();
 
+    /**
+     * Creates a new Unraid adapter instance
+     * @param options - Adapter options from ioBroker
+     */
     public constructor(options: Partial<AdapterOptions> = {}) {
         super({
             ...options,
@@ -161,6 +212,10 @@ class UnraidAdapter extends Adapter {
         this.on('stateChange', this.onStateChange.bind(this));
     }
 
+    /**
+     * Called when the adapter is ready to start.
+     * Initializes connections and starts polling.
+     */
     private async onReady(): Promise<void> {
         try {
             const settings = this.validateSettings();
@@ -202,6 +257,11 @@ class UnraidAdapter extends Adapter {
         }
     }
 
+    /**
+     * Configure which domains should be queried based on settings.
+     * Expands the selection to include dependencies.
+     * @param enabledDomains - List of explicitly enabled domain IDs
+     */
     private configureSelection(enabledDomains: readonly DomainId[]): void {
         this.rawSelection = new Set(enabledDomains);
         this.effectiveSelection = expandSelection(this.rawSelection);
@@ -247,6 +307,12 @@ class UnraidAdapter extends Adapter {
         }
     }
 
+    /**
+     * Collect all static object IDs from domain definitions.
+     * Used for cleanup and object tree management.
+     * @param definitions - Domain definitions to collect IDs from
+     * @returns Set of all object IDs including parent channels
+     */
     private collectStaticObjectIds(definitions: readonly DomainDefinition[]): Set<string> {
         const ids = new Set<string>();
 
@@ -267,6 +333,10 @@ class UnraidAdapter extends Adapter {
         return ids;
     }
 
+    /**
+     * Initialize WebSocket subscriptions for real-time metrics.
+     * Falls back to polling if subscriptions are not available.
+     */
     private async initializeSubscriptions(): Promise<void> {
         try {
             this.log.info('Initializing subscriptions...');
@@ -308,6 +378,10 @@ class UnraidAdapter extends Adapter {
         }
     }
 
+    /**
+     * Validate and normalize adapter configuration settings.
+     * @returns Validated settings or null if invalid
+     */
     private validateSettings(): AdapterSettings | null {
         const baseUrl = (this.config.baseUrl ?? '').trim();
         const apiToken = (this.config.apiToken ?? '').trim();
@@ -352,6 +426,10 @@ class UnraidAdapter extends Adapter {
         };
     }
 
+    /**
+     * Schedule the next polling cycle.
+     * Automatically reschedules after each poll completes.
+     */
     private scheduleNextPoll(): void {
         if (this.stopRequested) {
             return;
@@ -368,6 +446,11 @@ class UnraidAdapter extends Adapter {
         }, this.pollIntervalMs);
     }
 
+    /**
+     * Execute a single polling cycle.
+     * Queries the Unraid GraphQL API and updates states.
+     * @throws Error if Apollo client not initialized or GraphQL query fails
+     */
     private async pollOnce(): Promise<void> {
         if (!this.apolloClient) {
             throw new Error('Apollo client is not initialised');
@@ -396,6 +479,11 @@ class UnraidAdapter extends Adapter {
         }
     }
 
+    /**
+     * Build a GraphQL query from domain definitions.
+     * @param definitions - Domain definitions to include in query
+     * @returns GraphQL query string or null if empty
+     */
     private buildQuery(definitions: readonly DomainDefinition[]): string | null {
         const builder = new GraphQLSelectionBuilder();
         for (const definition of definitions) {
@@ -404,6 +492,11 @@ class UnraidAdapter extends Adapter {
         return builder.build();
     }
 
+    /**
+     * Apply query results to ioBroker states.
+     * Handles both static and dynamic state creation.
+     * @param data - GraphQL query result data
+     */
     private async applyData(data: QueryResult): Promise<void> {
         // Only check for CPU cores if metrics.cpu is selected
         if (this.effectiveSelection.has('metrics.cpu')) {
@@ -437,6 +530,11 @@ class UnraidAdapter extends Adapter {
         }
     }
 
+    /**
+     * Initialize static states from domain definitions.
+     * Creates state objects with proper metadata.
+     * @param definitions - Domain definitions containing state mappings
+     */
     private async initializeStaticStates(definitions: readonly DomainDefinition[]): Promise<void> {
         for (const definition of definitions) {
             for (const mapping of definition.states) {
@@ -445,6 +543,11 @@ class UnraidAdapter extends Adapter {
         }
     }
 
+    /**
+     * Handle dynamic CPU core state creation and updates.
+     * Creates states for each detected CPU core.
+     * @param data - Query result containing CPU metrics
+     */
     private async handleDynamicCpuCores(data: QueryResult): Promise<void> {
         // Only process CPU cores if metrics.cpu is selected
         if (!this.effectiveSelection.has('metrics.cpu')) {
@@ -1082,6 +1185,11 @@ class UnraidAdapter extends Adapter {
         return current === undefined ? null : current;
     }
 
+    /**
+     * Clean up the object tree by removing objects not in allowed set.
+     * Preserves dynamic objects and objects from other domains.
+     * @param allowedIds - Set of object IDs to keep
+     */
     private async cleanupObjectTree(allowedIds: Set<string>): Promise<void> {
         const objects = await this.getAdapterObjectsAsync();
         for (const fullId of Object.keys(objects)) {
@@ -1122,6 +1230,11 @@ class UnraidAdapter extends Adapter {
         return false;
     }
 
+    /**
+     * Ensure proper channel hierarchy exists for a state.
+     * Creates parent channels and devices as needed.
+     * @param id - State ID requiring channel hierarchy
+     */
     private async ensureChannelHierarchy(id: string): Promise<void> {
         const parts = id.split('.');
         for (let index = 1; index < parts.length; index += 1) {
@@ -1142,6 +1255,12 @@ class UnraidAdapter extends Adapter {
         }
     }
 
+    /**
+     * Create or update a state with proper object hierarchy.
+     * @param id - State ID
+     * @param common - Common attributes for the state
+     * @param value - Initial value for the state
+     */
     private async writeState(id: string, common: StateMapping['common'], value: unknown): Promise<void> {
         await this.ensureChannelHierarchy(id);
 

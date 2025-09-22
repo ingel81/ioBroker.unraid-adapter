@@ -1,17 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubscriptionManager = void 0;
+/**
+ * Manages GraphQL subscriptions for real-time Unraid metrics.
+ * Handles automatic reconnection and update throttling.
+ */
 class SubscriptionManager {
+    /** Apollo client for GraphQL operations */
     apolloClient;
+    /** Map of active subscriptions by name */
     subscriptions = new Map();
+    /** Callback to update ioBroker states */
     onStateUpdate;
+    /** Error handler callback */
     onError;
+    /** Connection lost callback */
     onConnectionLost;
+    /** Connection restored callback */
     onConnectionRestored;
+    /** Timer for reconnection attempts */
     reconnectTimer;
+    /** Current connection status */
     isConnected = false;
+    /** Map tracking last update time for each metric */
     lastUpdateTimes = new Map();
+    /** Minimum time between updates for the same metric (milliseconds) */
     UPDATE_THROTTLE_MS = 1000; // Throttle updates to max 1 per second per metric
+    /**
+     * Creates a new subscription manager instance
+     * @param options - Configuration options for the manager
+     */
     constructor(options) {
         this.apolloClient = options.apolloClient;
         this.onStateUpdate = options.onStateUpdate;
@@ -20,7 +38,9 @@ class SubscriptionManager {
         this.onConnectionRestored = options.onConnectionRestored;
     }
     /**
-     * Start subscriptions for CPU and Memory metrics
+     * Start all available subscriptions for Unraid metrics.
+     * Automatically discovers available subscriptions via introspection.
+     * @returns Promise resolving to true if at least one subscription started successfully
      */
     async start() {
         try {
@@ -78,7 +98,9 @@ class SubscriptionManager {
         }
     }
     /**
-     * Subscribe to CPU metrics only
+     * Subscribe to CPU metrics updates.
+     * Receives real-time CPU usage percentage.
+     * @returns Promise that resolves when subscription is created
      */
     async subscribeToCpu() {
         const subscription = this.apolloClient.subscribe(`
@@ -101,7 +123,9 @@ class SubscriptionManager {
         console.log('Subscribed to CPU updates');
     }
     /**
-     * Subscribe to Memory metrics only
+     * Subscribe to memory metrics updates.
+     * Receives real-time memory usage data including total, used, free, and percentage.
+     * @returns Promise that resolves when subscription is created
      */
     async subscribeToMemory() {
         const subscription = this.apolloClient.subscribe(`
@@ -127,7 +151,10 @@ class SubscriptionManager {
         console.log('Subscribed to Memory updates');
     }
     /**
-     * Subscribe to Array status updates
+     * Subscribe to array status updates.
+     * Receives real-time disk array status including disk health, parity, and capacity.
+     * Note: Currently broken in Unraid API (returns null despite being non-nullable).
+     * @returns Promise that resolves when subscription is created
      */
     async subscribeToArray() {
         const subscription = this.apolloClient.subscribe(`
@@ -220,7 +247,9 @@ class SubscriptionManager {
         console.log('Subscribed to array status updates');
     }
     /**
-     * Subscribe to Server status updates
+     * Subscribe to server status updates.
+     * Receives real-time server status including IP addresses and URLs.
+     * @returns Promise that resolves when subscription is created
      */
     async subscribeToServers() {
         const subscription = this.apolloClient.subscribe(`
@@ -247,7 +276,10 @@ class SubscriptionManager {
         console.log('Subscribed to server status updates');
     }
     /**
-     * Handle CPU update with throttling
+     * Handle incoming CPU metric updates with throttling.
+     * Updates the ioBroker state if throttle time has passed.
+     * @param cpu - CPU metrics object containing usage percentage
+     * @returns Promise that resolves when state is updated
      */
     async handleCpuUpdate(cpu) {
         if (await this.shouldUpdate('cpu.percentTotal')) {
@@ -255,7 +287,10 @@ class SubscriptionManager {
         }
     }
     /**
-     * Handle Memory update with throttling
+     * Handle incoming memory metric updates with throttling.
+     * Converts bytes to GB and updates multiple ioBroker states.
+     * @param memory - Memory metrics object containing usage data
+     * @returns Promise that resolves when all states are updated
      */
     async handleMemoryUpdate(memory) {
         const updates = [];
@@ -283,7 +318,10 @@ class SubscriptionManager {
         }
     }
     /**
-     * Check if we should update a metric (throttling)
+     * Check if a metric should be updated based on throttling rules.
+     * Prevents excessive updates by enforcing minimum time between updates.
+     * @param metricId - Unique identifier for the metric
+     * @returns Promise resolving to true if update should proceed
      */
     async shouldUpdate(metricId) {
         const now = Date.now();
@@ -295,7 +333,9 @@ class SubscriptionManager {
         return false;
     }
     /**
-     * Handle subscription error
+     * Handle subscription errors and trigger reconnection.
+     * Notifies callbacks and schedules automatic reconnection attempt.
+     * @param error - The error that occurred in the subscription
      */
     handleError(error) {
         console.error('Subscription error:', error);
@@ -308,7 +348,9 @@ class SubscriptionManager {
         this.scheduleReconnect();
     }
     /**
-     * Handle subscription completion
+     * Handle subscription completion event.
+     * Removes subscription from active list and triggers reconnection if needed.
+     * @param subscriptionName - Name of the completed subscription
      */
     handleComplete(subscriptionName) {
         console.log(`Subscription ${subscriptionName} completed`);
@@ -320,7 +362,8 @@ class SubscriptionManager {
         }
     }
     /**
-     * Schedule a reconnection attempt
+     * Schedule an automatic reconnection attempt.
+     * Retries connection after 5 seconds, with continuous retry on failure.
      */
     scheduleReconnect() {
         if (this.reconnectTimer) {
@@ -336,7 +379,9 @@ class SubscriptionManager {
         }, 5000);
     }
     /**
-     * Stop all subscriptions
+     * Stop all active subscriptions and clear internal state.
+     * Cancels any pending reconnection attempts.
+     * @returns Promise that resolves when all subscriptions are stopped
      */
     async stop() {
         if (this.reconnectTimer) {
@@ -352,13 +397,15 @@ class SubscriptionManager {
         this.isConnected = false;
     }
     /**
-     * Check if subscriptions are active
+     * Check if the subscription manager has active subscriptions.
+     * @returns True if connected and has active subscriptions
      */
     isActive() {
         return this.isConnected && this.subscriptions.size > 0;
     }
     /**
-     * Get list of active subscription names
+     * Get list of currently active subscription names.
+     * @returns Array of subscription names (e.g., ['cpu', 'memory', 'servers'])
      */
     getActiveSubscriptions() {
         return Array.from(this.subscriptions.keys());

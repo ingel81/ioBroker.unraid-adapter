@@ -89,19 +89,34 @@ const styles = (theme: Theme) =>
         },
     });
 
+/**
+ * Props for the Settings component
+ */
 type SettingsProps = WithStyles<typeof styles> & {
+    /** Current native configuration from ioBroker */
     native: ioBroker.AdapterConfig;
+    /** Callback to update configuration values */
     onChange: <K extends keyof ioBroker.AdapterConfig>(attr: K, value: ioBroker.AdapterConfig[K]) => void;
+    /** Current theme type (light/dark) */
     themeType?: string;
 };
 
+/**
+ * State for the Settings component
+ */
 type SettingsState = {
+    /** Set of expanded domain IDs in the tree view */
     expandedDomainIds: Set<string>;
 };
 
 const treeOrder = new Map<string, number>();
 allDomainIds.forEach((id, index) => treeOrder.set(id, index));
 
+/**
+ * Sort domain IDs according to their position in the tree.
+ * @param ids - Domain IDs to sort
+ * @returns Sorted array of domain IDs
+ */
 const sortByTreeOrder = (ids: Iterable<DomainId>): DomainId[] => {
     const uniqueIds = Array.from(new Set(ids));
     return uniqueIds.sort((left, right) => {
@@ -111,6 +126,12 @@ const sortByTreeOrder = (ids: Iterable<DomainId>): DomainId[] => {
     });
 };
 
+/**
+ * Check if a node and all its children are selected.
+ * @param node - Domain node to check
+ * @param selection - Current selection set
+ * @returns True if node and all children are selected
+ */
 const isNodeFullySelected = (node: DomainNode, selection: Set<DomainId>): boolean => {
     if (!selection.has(node.id)) {
         return false;
@@ -123,6 +144,12 @@ const isNodeFullySelected = (node: DomainNode, selection: Set<DomainId>): boolea
     return node.children.every((child) => isNodeFullySelected(child, selection));
 };
 
+/**
+ * Check if a node or any of its descendants are selected.
+ * @param node - Domain node to check
+ * @param selection - Current selection set
+ * @returns True if node or any descendant is selected
+ */
 const nodeHasSelectedDescendant = (node: DomainNode, selection: Set<DomainId>): boolean => {
     if (selection.has(node.id)) {
         return true;
@@ -135,6 +162,12 @@ const nodeHasSelectedDescendant = (node: DomainNode, selection: Set<DomainId>): 
     return node.children.some((child) => nodeHasSelectedDescendant(child, selection));
 };
 
+/**
+ * Check if a node is partially selected (some but not all children).
+ * @param node - Domain node to check
+ * @param selection - Current selection set
+ * @returns True if node has mixed selection state
+ */
 const isNodePartiallySelected = (node: DomainNode, selection: Set<DomainId>): boolean => {
     if (!node.children?.length) {
         return false;
@@ -148,7 +181,15 @@ const isNodePartiallySelected = (node: DomainNode, selection: Set<DomainId>): bo
     return !isNodeFullySelected(node, selection);
 };
 
+/**
+ * Settings component for configuring the Unraid adapter.
+ * Provides UI for connection settings and domain selection.
+ */
 class Settings extends React.Component<SettingsProps, SettingsState> {
+    /**
+     * Initialize the settings component with expanded tree state.
+     * @param props - Component properties
+     */
     public constructor(props: SettingsProps) {
         super(props);
 
@@ -164,6 +205,14 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
         };
     }
 
+    /**
+     * Render a text input field for adapter configuration.
+     * @param title - Translation key for the label
+     * @param attr - Configuration attribute name
+     * @param type - Input field type
+     * @param additionalProps - Additional props for TextField
+     * @returns TextField component
+     */
     private renderInput<K extends keyof ioBroker.AdapterConfig>(
         title: AdminWord,
         attr: K,
@@ -191,6 +240,10 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
         );
     }
 
+    /**
+     * Render the polling interval input field with validation.
+     * @returns TextField component for poll interval
+     */
     private renderPollInterval(): React.ReactNode {
         const { classes, native } = this.props;
         const value = typeof native.pollIntervalSeconds === 'number' ? native.pollIntervalSeconds : 60;
@@ -265,6 +318,13 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
         }
     }
 
+    /**
+     * Render a domain node in the selection tree.
+     * @param node - Domain node to render
+     * @param depth - Current depth in the tree
+     * @param selection - Current selection set
+     * @returns React node for the domain
+     */
     private renderDomainNode(node: DomainNode, depth: number, selection: Set<DomainId>): React.ReactNode {
         const { classes } = this.props;
         const hasChildren = !!node.children?.length;
@@ -314,6 +374,10 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
         );
     }
 
+    /**
+     * Render the complete settings UI.
+     * @returns React component tree for settings
+     */
     public render(): React.ReactNode {
         const { classes, native } = this.props;
         const enabledDomainsArrayRaw = Array.isArray(native.enabledDomains)

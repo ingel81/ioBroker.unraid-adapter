@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.expandSelection = exports.collectNodeIds = exports.domainDefinitionById = exports.domainDefinitions = exports.getDomainAncestors = exports.defaultEnabledDomains = exports.allDomainIds = exports.domainNodeById = exports.domainTree = void 0;
+/**
+ * Complete domain tree structure for the admin UI.
+ * Defines all available domains and their hierarchy.
+ */
 const domainTreeDefinition = [
     {
         id: 'info',
@@ -104,6 +108,12 @@ const domainTreeDefinition = [
         ],
     },
 ];
+/**
+ * Build an index map of domain nodes by their IDs.
+ * @param nodes - Domain nodes to index
+ * @param acc - Accumulator map
+ * @returns Map of domain IDs to nodes
+ */
 const buildNodeIndex = (nodes, acc) => {
     for (const node of nodes) {
         acc.set(node.id, node);
@@ -113,6 +123,12 @@ const buildNodeIndex = (nodes, acc) => {
     }
     return acc;
 };
+/**
+ * Collect all domain IDs from a list of nodes recursively.
+ * @param nodes - Domain nodes to collect IDs from
+ * @param acc - Accumulator array
+ * @returns Array of all domain IDs
+ */
 const collectIds = (nodes, acc = []) => {
     for (const node of nodes) {
         acc.push(node.id);
@@ -122,6 +138,12 @@ const collectIds = (nodes, acc = []) => {
     }
     return acc;
 };
+/**
+ * Collect domain IDs that are marked as default selected.
+ * @param nodes - Domain nodes to check
+ * @param acc - Accumulator array
+ * @returns Array of default selected domain IDs
+ */
 const collectDefaultIds = (nodes, acc = []) => {
     for (const node of nodes) {
         if (node.defaultSelected) {
@@ -133,6 +155,13 @@ const collectDefaultIds = (nodes, acc = []) => {
     }
     return acc;
 };
+/**
+ * Build an index of domain ancestors for quick lookup.
+ * @param nodes - Domain nodes to process
+ * @param ancestors - Current ancestor chain
+ * @param acc - Accumulator map
+ * @returns Map of domain IDs to their ancestors
+ */
 const buildAncestorIndex = (nodes, parentId, acc) => {
     for (const node of nodes) {
         const ancestors = parentId ? [...(acc.get(parentId) ?? []), parentId] : [];
@@ -143,11 +172,28 @@ const buildAncestorIndex = (nodes, parentId, acc) => {
     }
     return acc;
 };
+/**
+ * Complete domain tree for UI selection
+ */
 exports.domainTree = domainTreeDefinition;
+/**
+ * Map of domain IDs to their corresponding nodes for quick lookup
+ */
 exports.domainNodeById = buildNodeIndex(domainTreeDefinition, new Map());
+/**
+ * Immutable array of all available domain IDs
+ */
 exports.allDomainIds = Object.freeze(collectIds(domainTreeDefinition));
+/**
+ * Immutable array of domain IDs that are enabled by default
+ */
 exports.defaultEnabledDomains = Object.freeze(collectDefaultIds(domainTreeDefinition));
 const ancestorIndex = buildAncestorIndex(domainTreeDefinition, undefined, new Map());
+/**
+ * Get all ancestor domain IDs for a given domain.
+ * @param id - Domain ID to get ancestors for
+ * @returns Array of ancestor domain IDs, ordered from parent to root
+ */
 const getDomainAncestors = (id) => ancestorIndex.get(id) ?? [];
 exports.getDomainAncestors = getDomainAncestors;
 const domainDefinitionsList = [
@@ -650,6 +696,11 @@ function numberOrNull(value) {
     }
     return null;
 }
+/**
+ * Convert bytes to gigabytes.
+ * @param value - Value in bytes
+ * @returns Value in gigabytes or null if invalid
+ */
 function bytesToGigabytes(value) {
     const numeric = numberOrNull(value);
     if (numeric === null) {
@@ -666,8 +717,19 @@ function kilobytesToGigabytes(value) {
     const gigabytes = numeric / (1024 * 1024);
     return Number.isFinite(gigabytes) ? Math.round(gigabytes * 100) / 100 : null;
 }
+/**
+ * List of all domain definitions with their GraphQL selections and state mappings
+ */
 exports.domainDefinitions = domainDefinitionsList;
+/**
+ * Map of domain IDs to their definitions for quick lookup
+ */
 exports.domainDefinitionById = new Map(domainDefinitionsList.map((definition) => [definition.id, definition]));
+/**
+ * Recursively collect all domain IDs from a node and its children.
+ * @param node - Domain node to collect IDs from
+ * @returns Array of all domain IDs in the node tree
+ */
 const collectNodeIds = (node) => {
     const ids = [node.id];
     if (node.children?.length) {
@@ -678,6 +740,11 @@ const collectNodeIds = (node) => {
     return ids;
 };
 exports.collectNodeIds = collectNodeIds;
+/**
+ * Collect all selectable (leaf) domain IDs from a node tree.
+ * @param node - Root node to traverse
+ * @param acc - Accumulator set for IDs
+ */
 const collectSelectable = (node, acc) => {
     if (exports.domainDefinitionById.has(node.id)) {
         acc.add(node.id);
@@ -688,6 +755,12 @@ const collectSelectable = (node, acc) => {
         }
     }
 };
+/**
+ * Expand a domain selection to include all ancestors.
+ * Ensures parent domains are included when child domains are selected.
+ * @param selection - Initial domain selection
+ * @returns Expanded selection including all necessary ancestors
+ */
 const expandSelection = (selection) => {
     const result = new Set();
     for (const id of selection) {
