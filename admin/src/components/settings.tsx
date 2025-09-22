@@ -47,8 +47,6 @@ const styles = (theme: Theme): ReturnType<typeof createStyles> =>
             border: `1px solid ${theme.palette.type === 'dark' ? '#555' : '#cccccc'}`,
             borderRadius: 4,
             padding: '12px 16px',
-            maxHeight: 420,
-            overflowY: 'auto',
             backgroundColor: theme.palette.type === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
         },
         treeRow: {
@@ -264,12 +262,27 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                 className={`${classes.input} ${classes.controlElement}`}
                 value={value}
                 type="number"
-                inputProps={{ min: 5, step: 5 }}
+                inputProps={{ min: 10, step: 5 }}
                 onChange={event => {
-                    const parsed = Number(event.target.value);
-                    const sanitized = Number.isFinite(parsed) ? Math.floor(parsed) : value;
-                    const nextValue = Math.max(5, sanitized || 0);
-                    this.props.onChange('pollIntervalSeconds', nextValue);
+                    const inputValue = event.target.value;
+                    // Allow empty string for editing
+                    if (inputValue === '') {
+                        this.props.onChange('pollIntervalSeconds', 0);
+                        return;
+                    }
+                    const parsed = Number(inputValue);
+                    if (Number.isFinite(parsed) && parsed >= 0) {
+                        this.props.onChange('pollIntervalSeconds', parsed);
+                    }
+                }}
+                onBlur={() => {
+                    // Validate and sanitize on blur
+                    const currentValue = native.pollIntervalSeconds;
+                    const numValue = typeof currentValue === 'number' ? currentValue : Number(currentValue);
+                    const sanitized = Number.isFinite(numValue) ? Math.max(10, Math.floor(numValue)) : 60;
+                    if (sanitized !== currentValue) {
+                        this.props.onChange('pollIntervalSeconds', sanitized);
+                    }
                 }}
                 helperText={I18n.t('pollIntervalSeconds_help')}
                 margin="normal"
@@ -368,7 +381,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                                 color="primary"
                                 checked={isChecked}
                                 indeterminate={isIndeterminate}
-                                onChange={(event, checked) => this.handleDomainToggle(node, checked)}
+                                onChange={(_event, checked) => this.handleDomainToggle(node, checked)}
                             />
                         }
                         label={I18n.t(node.label as AdminWord)}
@@ -431,7 +444,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                                 <Checkbox
                                     color="primary"
                                     checked={!!native.allowSelfSigned}
-                                    onChange={(event, checked) => this.props.onChange('allowSelfSigned', checked)}
+                                    onChange={(_event, checked) => this.props.onChange('allowSelfSigned', checked)}
                                 />
                             }
                             label={I18n.t('allowSelfSigned')}
