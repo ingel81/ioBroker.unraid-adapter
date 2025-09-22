@@ -87,6 +87,11 @@ The adapter creates a structured tree of objects for the monitored data:
   ### **WORK IN PROGRESS**
 -->
 
+### **WORK IN PROGRESS**
+
+- (ingel81) Documentation
+- (ingel81) Minor admin page improvements
+
 ### 0.5.1 (2025-09-22)
 
 - (ingel81) ESLint9 Migration
