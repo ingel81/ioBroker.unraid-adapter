@@ -102,8 +102,6 @@ class SubscriptionManager {
     /**
      * Subscribe to CPU metrics updates.
      * Receives real-time CPU usage percentage.
-     *
-     * @returns Promise that resolves when subscription is created
      */
     subscribeToCpu() {
         const subscription = this.apolloClient.subscribe(`
@@ -128,8 +126,6 @@ class SubscriptionManager {
     /**
      * Subscribe to memory metrics updates.
      * Receives real-time memory usage data including total, used, free, and percentage.
-     *
-     * @returns Promise that resolves when subscription is created
      */
     subscribeToMemory() {
         const subscription = this.apolloClient.subscribe(`
@@ -158,8 +154,6 @@ class SubscriptionManager {
      * Subscribe to array status updates.
      * Receives real-time disk array status including disk health, parity, and capacity.
      * Note: Currently broken in Unraid API (returns null despite being non-nullable).
-     *
-     * @returns Promise that resolves when subscription is created
      */
     subscribeToArray() {
         const subscription = this.apolloClient.subscribe(`
@@ -254,8 +248,6 @@ class SubscriptionManager {
     /**
      * Subscribe to server status updates.
      * Receives real-time server status including IP addresses and URLs.
-     *
-     * @returns Promise that resolves when subscription is created
      */
     subscribeToServers() {
         const subscription = this.apolloClient.subscribe(`
@@ -392,8 +384,6 @@ class SubscriptionManager {
     /**
      * Stop all active subscriptions and clear internal state.
      * Cancels any pending reconnection attempts.
-     *
-     * @returns Promise that resolves when all subscriptions are stopped
      */
     stop() {
         if (this.reconnectTimer) {

@@ -1,7 +1,6 @@
 import { Adapter, type AdapterOptions } from '@iobroker/adapter-core';
 
 import { UnraidApolloClient } from './apollo-client';
-import { SubscriptionManager } from './subscription-manager';
 import { StateManager } from './managers/state-manager';
 import { DynamicResourceManager } from './managers/dynamic-resource-manager';
 import { PollingManager } from './managers/polling-manager';
@@ -14,7 +13,6 @@ import { domainDefinitionById, expandSelection, type DomainDefinition, type Doma
  */
 class UnraidAdapter extends Adapter {
     private apolloClient?: UnraidApolloClient;
-    private subscriptionManager?: SubscriptionManager;
     private stateManager?: StateManager;
     private dynamicResourceManager?: DynamicResourceManager;
     private pollingManager?: PollingManager;
@@ -169,46 +167,6 @@ class UnraidAdapter extends Adapter {
         }
     }
 
-    /**
-     * Initialize WebSocket subscriptions for real-time metrics.
-     * Falls back to polling if subscriptions are not available.
-     */
-    private async initializeSubscriptions(): Promise<void> {
-        try {
-            this.log.info('Initializing subscriptions...');
-
-            if (!this.apolloClient || !this.stateManager) {
-                throw new Error('Apollo client or state manager not initialized');
-            }
-
-            this.subscriptionManager = new SubscriptionManager({
-                apolloClient: this.apolloClient,
-                onStateUpdate: async (id: string, value: unknown) => {
-                    await this.stateManager!.updateState(id, value);
-                },
-                onError: error => {
-                    this.log.warn(`Subscription error: ${error.message}`);
-                },
-                onConnectionLost: () => {
-                    this.log.warn('WebSocket connection lost, falling back to polling for CPU/Memory');
-                },
-                onConnectionRestored: () => {
-                    this.log.info('WebSocket connection restored, using subscriptions for CPU/Memory');
-                },
-            });
-
-            const success = await this.subscriptionManager.start();
-            if (success) {
-                this.log.info('Subscriptions active for CPU and Memory metrics');
-            } else {
-                this.log.warn('Subscriptions not available, using polling for all metrics');
-            }
-        } catch (error) {
-            this.log.error(`Failed to initialize subscriptions: ${this.describeError(error)}`);
-            this.log.info('Falling back to polling for all metrics');
-        }
-    }
-
     private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
         if (state) {
             this.log.debug(`State ${id} changed: ${state.val} (ack=${state.ack})`);
@@ -226,12 +184,6 @@ class UnraidAdapter extends Adapter {
         try {
             // Stop polling
             this.pollingManager?.stop();
-
-            // Stop subscriptions if active
-            if (this.subscriptionManager) {
-                this.subscriptionManager.stop();
-                this.subscriptionManager = undefined;
-            }
 
             // Dispose Apollo client (fire and forget)
             if (this.apolloClient) {

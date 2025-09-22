@@ -153,7 +153,10 @@ export class UnraidApolloClient {
      * @returns Observable that emits subscription results
      * @template T - Type of the expected subscription result
      */
-    subscribe<T = unknown>(subscription: string, variables?: Record<string, unknown>): ReturnType<typeof this.client.subscribe<T>> {
+    subscribe<T = unknown>(
+        subscription: string,
+        variables?: Record<string, unknown>,
+    ): ReturnType<typeof this.client.subscribe<T>> {
         return this.client.subscribe<T>({
             query: gql(subscription),
             variables,
