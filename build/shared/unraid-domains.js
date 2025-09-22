@@ -162,7 +162,7 @@ const collectDefaultIds = (nodes, acc = []) => {
  * Build an index of domain ancestors for quick lookup.
  *
  * @param nodes - Domain nodes to process
- * @param ancestors - Current ancestor chain
+ * @param parentId - Parent domain ID for the current level
  * @param acc - Accumulator map
  * @returns Map of domain IDs to their ancestors
  */
