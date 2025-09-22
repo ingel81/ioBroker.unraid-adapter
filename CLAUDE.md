@@ -50,7 +50,7 @@ dev-server watch       # Dev server on :8081
 
 ### Important Reminders
 - Don't create unnecessary files - prefer editing existing ones
-- Don't auto-commit without user request ("bitte nichts einchecken ungefragt")
+- Don't auto-commit without user request
 - Don't add emojis unless explicitly requested
 - Always check if libraries exist before using them
-- den dev-server starte immer ich
+- I'll always start the dev-server myself

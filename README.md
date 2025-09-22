@@ -19,17 +19,45 @@ This adapter connects ioBroker to Unraid servers via the GraphQL API to monitor 
 
 ## Features
 
-- Monitor CPU and memory usage
+- Monitor CPU and memory usage (including per-core statistics)
 - Track server status and network information
+- Monitor Docker containers status and resources
+- View array disks (data, parity, cache) with health information
+- Track network shares usage
+- Monitor virtual machines status
 - View system time and operating system details
 - Support for self-signed certificates
 - Configurable polling interval
+- Dynamic state creation based on available resources
 
 ## Configuration
 
+### Generating an API Token in Unraid
+
+#### For Unraid versions before 7.2:
+
+1. Install the **"Unraid Connect Plugin"** from the Unraid Community Applications store
+2. After installation, navigate to: **Settings → Management Access → API Keys**
+
+#### For Unraid 7.2 and later:
+
+- API functionality is built-in, go directly to: **Settings → Management Access → API Keys**
+
+#### Creating the Token:
+
+1. Click on **"Add API Key"**
+2. **Important**: Select **"Admin"** as the access level (Roles: ADMIN)
+    - Currently only Admin tokens work properly (see [this forum post](https://forums.unraid.net/topic/193661-api-access-always-403-forbidden/))
+3. Give the token a descriptive name (e.g., "ioBroker")
+4. Copy the generated token (API Key) - you'll need it for the adapter configuration
+
+![Unraid API Token](docs/de/img/unraid_token01.png)
+
+### Adapter Settings
+
 1. **Base URL**: Enter your Unraid server address (e.g., `https://192.168.1.10` or `https://tower.local`)
-2. **API Token**: Generate an API token in your Unraid web UI settings and paste it here
-3. **Polling Interval**: Set how often to fetch data (default: 60 seconds)
+2. **API Token**: Paste the Admin token you generated in Unraid
+3. **Polling Interval**: Set how often to fetch data (default: 60 seconds, minimum: 10 seconds)
 4. **Self-signed Certificates**: Enable if your Unraid server uses a self-signed HTTPS certificate
 5. **Data Domains**: Select which data categories to monitor (System Info, Server Status, Metrics, etc.)
 
@@ -41,13 +69,16 @@ This adapter connects ioBroker to Unraid servers via the GraphQL API to monitor 
 
 The adapter creates a structured tree of objects for the monitored data:
 
-![Objects](docs/de/img/ioBroker_Objects01.png)
+![Objects](docs/de/img/ioBroker_objects01.png)
 
 ## Requirements
 
-- Unraid server with GraphQL API enabled
-- API token generated in Unraid web UI
+- Unraid server (version 7.0.0+ recommended)
+    - For versions before 7.2: Install "Unraid Connect Plugin" from Community Applications
+    - For version 7.2+: API support is built-in
+- Admin-level API token generated in Unraid web UI
 - Network access from ioBroker to Unraid server
+- ioBroker version 3.0 or higher
 
 ## Changelog
 
@@ -55,6 +86,7 @@ The adapter creates a structured tree of objects for the monitored data:
   Placeholder for the next version (at the beginning of the line):
   ### **WORK IN PROGRESS**
 -->
+
 ### 0.5.1 (2025-09-22)
 
 - (ingel81) ESLint9 Migration

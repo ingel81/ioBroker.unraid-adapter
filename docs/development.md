@@ -7,21 +7,43 @@ ioBroker.unraid-adapter/
 ├── src/                    # TypeScript source files
 │   ├── main.ts            # Main adapter logic
 │   ├── apollo-client.ts   # GraphQL client setup
-│   └── shared/            # Shared types and definitions
-│       └── unraid-domains.ts
+│   ├── subscription-manager.ts # WebSocket subscription handling
+│   ├── config/            # Configuration management
+│   │   └── adapter-config.ts
+│   ├── graphql/           # GraphQL utilities
+│   │   └── selection-builder.ts
+│   ├── managers/          # Core managers
+│   │   ├── dynamic-resource-manager.ts
+│   │   ├── polling-manager.ts
+│   │   └── state-manager.ts
+│   ├── shared/            # Shared types and definitions
+│   │   └── unraid-domains.ts
+│   ├── types/             # TypeScript type definitions
+│   │   └── adapter-types.ts
+│   └── utils/             # Utility functions
+│       └── data-transformers.ts
 ├── build/                 # Compiled JavaScript (git-ignored)
 ├── admin/                 # Admin UI
 │   ├── src/              # React TypeScript sources
 │   │   ├── app.tsx
 │   │   ├── index.tsx
-│   │   └── components/
-│   │       └── settings.tsx
+│   │   ├── components/
+│   │   │   └── settings.tsx
+│   │   └── i18n/         # Internationalization
+│   │       ├── en.json
+│   │       ├── de.json
+│   │       └── i18n.d.ts
 │   └── build/            # Bundled admin UI
 ├── test/                  # Test files
 │   ├── integration.js
 │   ├── package.js
 │   └── mocha.setup.js
 ├── docs/                  # Documentation
+│   ├── architecture.md   # System design
+│   ├── development.md    # This file
+│   └── unraid-api.md     # API documentation
+├── eslint.config.mjs     # ESLint configuration
+├── prettier.config.mjs   # Prettier configuration
 └── lib/                   # Type definitions
 
 ```
@@ -44,9 +66,10 @@ npm test                # Run all tests
 npm run test:js         # Run unit tests
 npm run test:package    # Validate package files
 npm run test:integration # Run integration tests
-npm run lint            # Check code style
+npm run lint            # ESLint code style check (ESLint 9)
 npm run lint -- --fix   # Auto-fix lint issues
 npm run check           # TypeScript type checking
+npm run translate       # Auto-translate missing i18n strings
 ```
 
 ### Development Server
@@ -61,13 +84,16 @@ dev-server watch        # Start dev server on http://localhost:8081
 - Strict mode enabled - no `any` types without justification
 - Prefer interfaces over types for object shapes
 - Use const assertions for literal types
+- Full JSDoc documentation for all public functions and classes
 
 ### Code Style
-- 4 spaces indentation (enforced by ESLint)
+- 4 spaces indentation (enforced by Prettier and ESLint)
 - Single quotes for strings
-- No semicolons (except where required)
+- Semicolons required (enforced by Prettier)
 - Max line length: 120 characters
 - File naming: kebab-case for files, PascalCase for components
+- ESLint 9 with flat config (eslint.config.mjs)
+- Prettier for automatic code formatting
 
 ### Naming Conventions
 ```typescript
@@ -189,16 +215,18 @@ Configuration fields defined in `io-package.json`:
 }
 ```
 
-2. **Update GraphQL Query:**
-- Add selection builder logic
-- Handle response mapping
+2. **Handle Dynamic Resources (if needed):**
+- Add logic to `dynamic-resource-manager.ts` for dynamic state creation
+- Examples: CPU cores, Docker containers, VMs, shares
 
 3. **Create States:**
-- Define object structure
-- Add transformation functions
+- Static states: Define in domain's state mappings
+- Dynamic states: Create in DynamicResourceManager
+- Add transformation functions in `data-transformers.ts`
 
 4. **Update Admin UI:**
-- Domain appears automatically in tree
+- Domain appears automatically in settings tree
+- No manual UI changes needed
 
 ### Adding New Metrics
 
@@ -226,33 +254,44 @@ iobroker set unraid.0 --loglevel debug
 - Check baseUrl format (include https://)
 - Verify API token is valid
 - Check firewall settings
+- Ensure self-signed certificates are allowed if using them
 
 **GraphQL Errors**
 - Enable debug logging to see full query
 - Test query in Unraid GraphQL playground
 - Check for schema changes in Unraid version
+- Note: Subscriptions are currently disabled due to Unraid API issues
 
 **State Not Updating**
-- Verify domain is enabled
-- Check polling interval
-- Look for transformation errors
+- Verify domain is enabled in configuration
+- Check polling interval (minimum 10 seconds)
+- Look for transformation errors in logs
+- Check if dynamic resources are detected
+
+**TypeScript/ESLint Errors**
+- Run `npm run check` for TypeScript validation
+- Run `npm run lint` for ESLint checks
+- Use `npm run lint -- --fix` to auto-fix issues
+- JSDoc comments are required for all public functions
 
 ## Performance Optimization
 
 ### Efficient Polling
-- Batch related metrics in single query
-- Use appropriate polling intervals
-- Cache static data
+- Batch related metrics in single GraphQL query
+- Use appropriate polling intervals (10s minimum)
+- Apollo Client handles caching automatically
+- Polling mode used instead of subscriptions for reliability
 
 ### State Updates
-- Only update changed values
-- Use bulk operations where possible
-- Clean up unused objects
+- StateManager only updates changed values
+- Bulk operations for dynamic resource creation
+- Automatic cleanup of unused objects on domain deselection
 
 ### Memory Management
-- Reuse client instances
-- Clear timers on shutdown
-- Limit response data size
+- Single Apollo Client instance reused
+- Proper cleanup in onUnload()
+- Clear timers and intervals on shutdown
+- GraphQL response logging limited to 3000 chars
 
 ## Release Process
 
@@ -274,17 +313,37 @@ npm run release
 3. Publish to npm (if applicable)
 4. Update ioBroker repository
 
+## Recent Architecture Changes (2025)
+
+### Apollo Client Migration
+- All GraphQL operations now use Apollo Client
+- WebSocket subscriptions disabled (Unraid API issues)
+- Reliable polling mode with configurable intervals
+
+### Manager-Based Architecture
+- **StateManager**: Handles all ioBroker state operations
+- **PollingManager**: Controls polling cycles and queries
+- **DynamicResourceManager**: Creates dynamic states for CPU cores, containers, etc.
+- **SubscriptionManager**: Ready for when subscriptions are re-enabled
+
+### ESLint 9 Migration
+- Flat config format (eslint.config.mjs)
+- Prettier integration for code formatting
+- JSDoc enforcement for documentation
+
 ## Resources
 
 ### Documentation
 - [ioBroker Adapter Development](https://github.com/ioBroker/ioBroker.docs/blob/master/docs/en/dev/adapterdev.md)
 - [GraphQL Specification](https://spec.graphql.org/)
 - [Apollo Client Docs](https://www.apollographql.com/docs/react/)
+- [ESLint 9 Documentation](https://eslint.org/docs/latest/)
 
 ### Tools
 - [GraphQL Playground](https://github.com/graphql/graphql-playground)
 - [ioBroker CLI](https://github.com/ioBroker/ioBroker.cli)
 - [TypeScript Playground](https://www.typescriptlang.org/play)
+- [Apollo DevTools](https://www.apollographql.com/docs/react/development-testing/developer-tooling/)
 
 ### Support
 - GitHub Issues: Report bugs and request features
