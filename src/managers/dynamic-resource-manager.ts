@@ -555,7 +555,9 @@ export class DynamicResourceManager {
     private async createDiskStates(prefix: string, disks: unknown[]): Promise<void> {
         for (let i = 0; i < disks.length; i++) {
             const disk = disks[i] as Record<string, unknown>;
-            const diskIndex = disk.idx !== undefined ? String(disk.idx) : String(i);
+            const rawIdx = disk.idx;
+            const diskIndex =
+                rawIdx !== undefined && rawIdx !== null ? (toStringOrNull(rawIdx) ?? String(i)) : String(i);
             const diskPrefix = `${prefix}.${diskIndex}`;
 
             // Basic info states
@@ -638,7 +640,11 @@ export class DynamicResourceManager {
     private async updateDiskValues(prefix: string, disks: unknown[]): Promise<void> {
         for (const disk of disks) {
             const d = disk as Record<string, unknown>;
-            const diskIndex = d.idx !== undefined ? String(d.idx) : String(disks.indexOf(disk));
+            const rawIdx = d.idx;
+            const diskIndex =
+                rawIdx !== undefined && rawIdx !== null
+                    ? (toStringOrNull(rawIdx) ?? String(disks.indexOf(disk)))
+                    : String(disks.indexOf(disk));
             const diskPrefix = `${prefix}.${diskIndex}`;
 
             await this.stateManager.updateState(`${diskPrefix}.name`, toStringOrNull(d.name));

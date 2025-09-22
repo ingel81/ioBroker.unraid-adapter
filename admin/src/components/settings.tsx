@@ -18,6 +18,9 @@ import {
     domainNodeById,
 } from '../../../src/shared/unraid-domains';
 
+// Local type for admin words
+type AdminWord = keyof typeof import('../i18n/en.json');
+
 const styles = (theme: Theme): ReturnType<typeof createStyles> =>
     createStyles({
         tab: {

@@ -19,6 +19,7 @@ export default [
             'admin/admin.d.ts',
             'admin/blockly.js',
             '**/adapter-config.d.ts',
+            'admin/src/i18n/i18n.d.ts',  // Don't lint this file - it has special restrictions
         ],
     },
     {
@@ -30,6 +31,13 @@ export default [
             // 'jsdoc/require-param-description': 'off',
             // 'jsdoc/require-returns-description': 'off',
             // 'jsdoc/require-returns-check': 'off',
+        },
+    },
+    {
+        // Disable import() type annotation check for settings.tsx
+        files: ['admin/src/components/settings.tsx'],
+        rules: {
+            '@typescript-eslint/consistent-type-imports': 'off',
         },
     },
 ];

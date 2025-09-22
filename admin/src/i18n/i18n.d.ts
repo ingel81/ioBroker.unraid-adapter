@@ -19,7 +19,6 @@ declare type AdminWord = keyof typeof import('./en.json');
 declare module '@iobroker/adapter-react/i18n' {
     /**
      * Translate the given string to the selected language.
-     *
      * @param word The (key) word to look up the string. Has to be defined at least in `i18n/en.json`.
      * @param args Optional arguments which will replace the first (second, third, ...) occurence of %s
      */
@@ -27,7 +26,6 @@ declare module '@iobroker/adapter-react/i18n' {
 
     /**
      * Extend translations for languages that are not part of the default bundle.
-     *
      * @param words Additional translations.
      * @param lang Language identifier.
      */
