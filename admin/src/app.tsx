@@ -15,11 +15,26 @@ import es from './i18n/es.json';
 import pl from './i18n/pl.json';
 import zhCn from './i18n/zh-cn.json';
 
+/**
+ * Application properties type alias
+ */
 type AppProps = GenericAppProps;
 
+/**
+ * Translation structure for internationalization
+ */
 type BaseTranslations = Record<string, Record<string, string>>;
 
+/**
+ * Main application component for the Unraid adapter configuration.
+ * Extends GenericApp from ioBroker React framework.
+ */
 class App extends GenericApp {
+    /**
+     * Creates the application instance with translations.
+     *
+     * @param props - Application properties from ioBroker
+     */
     public constructor(props: AppProps) {
         const baseTranslations: BaseTranslations = {
             en,
@@ -41,13 +56,21 @@ class App extends GenericApp {
         };
 
         super(props, extendedProps);
-
     }
 
+    /**
+     * Callback when ioBroker connection is established.
+     * Override this to perform initialization tasks.
+     */
     public onConnectionReady(): void {
         // executed when connection is ready
     }
 
+    /**
+     * Render the application UI.
+     *
+     * @returns The main application JSX element
+     */
     public render(): JSX.Element {
         if (!this.state.loaded) {
             return super.render();
@@ -57,10 +80,12 @@ class App extends GenericApp {
 
         return (
             <div className="App">
-                <div style={{
-                    maxHeight: 'calc(100vh - 75px)',
-                    overflowY: 'auto'
-                }}>
+                <div
+                    style={{
+                        maxHeight: 'calc(100vh - 75px)',
+                        overflowY: 'auto',
+                    }}
+                >
                     <Settings
                         native={nativeConfig}
                         onChange={(attr, value) => this.updateNativeValue(attr as string, value)}

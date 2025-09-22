@@ -53,3 +53,4 @@ dev-server watch       # Dev server on :8081
 - Don't auto-commit without user request ("bitte nichts einchecken ungefragt")
 - Don't add emojis unless explicitly requested
 - Always check if libraries exist before using them
+- den dev-server starte immer ich

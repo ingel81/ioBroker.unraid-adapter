@@ -6,33 +6,54 @@ import type { ClientOptions } from 'ws';
 import WebSocket from 'ws';
 import { setGlobalDispatcher, Agent } from 'undici';
 
+/**
+ * Configuration options for the Unraid Apollo GraphQL client
+ */
 export interface ApolloClientOptions {
+    /** Base URL of the Unraid server (e.g., https://192.168.1.100) */
     baseUrl: string;
+    /** API token for authentication with Unraid */
     apiToken: string;
+    /** Whether to allow self-signed SSL certificates (default: false) */
     allowSelfSigned?: boolean;
 }
 
+/**
+ * Apollo GraphQL client wrapper for Unraid server communication.
+ * Handles both HTTP queries/mutations and WebSocket subscriptions.
+ */
 export class UnraidApolloClient {
+    /** Apollo Client instance for GraphQL operations */
     private client: ApolloClient<unknown>;
+    /** WebSocket client for subscription support */
     private wsClient: ReturnType<typeof createClient>;
+    /** Base URL of the Unraid server */
     private readonly baseUrl: string;
+    /** API token for authentication */
     private readonly apiToken: string;
 
+    /**
+     * Creates a new Unraid Apollo client instance
+     *
+     * @param options - Configuration options for the client
+     */
     constructor(options: ApolloClientOptions) {
         this.baseUrl = options.baseUrl.replace(/\/$/, '');
         this.apiToken = options.apiToken;
 
         // Configure undici for self-signed certificates if needed
         if (options.allowSelfSigned && this.baseUrl.startsWith('https://')) {
-            setGlobalDispatcher(new Agent({
-                connect: {
-                    rejectUnauthorized: false
-                }
-            }));
+            setGlobalDispatcher(
+                new Agent({
+                    connect: {
+                        rejectUnauthorized: false,
+                    },
+                }),
+            );
         }
 
         // Create WebSocket client for subscriptions
-        const wsUrl = this.baseUrl.replace(/^http/, 'ws') + '/graphql';
+        const wsUrl = `${this.baseUrl.replace(/^http/, 'ws')}/graphql`;
 
         // Create a custom WebSocket class that includes our options
         class CustomWebSocket extends WebSocket {
@@ -40,8 +61,8 @@ export class UnraidApolloClient {
                 const wsOptions: ClientOptions = {
                     rejectUnauthorized: !options.allowSelfSigned,
                     headers: {
-                        'x-api-key': options.apiToken
-                    }
+                        'x-api-key': options.apiToken,
+                    },
                 };
                 super(url, protocols, wsOptions);
             }
@@ -51,7 +72,7 @@ export class UnraidApolloClient {
             url: wsUrl,
             webSocketImpl: CustomWebSocket,
             connectionParams: {
-                'x-api-key': this.apiToken
+                'x-api-key': this.apiToken,
             },
             retryAttempts: 5,
             shouldRetry: () => true,
@@ -62,8 +83,8 @@ export class UnraidApolloClient {
         const httpLink = new HttpLink({
             uri: `${this.baseUrl}/graphql`,
             headers: {
-                'x-api-key': this.apiToken
-            }
+                'x-api-key': this.apiToken,
+            },
         });
 
         // Create WebSocket link for subscriptions
@@ -73,13 +94,10 @@ export class UnraidApolloClient {
         const splitLink = split(
             ({ query }) => {
                 const definition = getMainDefinition(query);
-                return (
-                    definition.kind === 'OperationDefinition' &&
-                    definition.operation === 'subscription'
-                );
+                return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
             },
             wsLink,
-            httpLink
+            httpLink,
         );
 
         // Create Apollo Client
@@ -88,48 +106,68 @@ export class UnraidApolloClient {
             cache: new InMemoryCache(),
             defaultOptions: {
                 watchQuery: {
-                    fetchPolicy: 'no-cache'
+                    fetchPolicy: 'no-cache',
                 },
                 query: {
-                    fetchPolicy: 'no-cache'
-                }
-            }
+                    fetchPolicy: 'no-cache',
+                },
+            },
         });
     }
 
     /**
-     * Execute a GraphQL query
+     * Execute a GraphQL query against the Unraid server
+     *
+     * @param query - The GraphQL query string
+     * @returns Promise resolving to the query result data
+     * @template T - Type of the expected query result
      */
     async query<T = unknown>(query: string): Promise<T> {
         const result = await this.client.query<T>({
-            query: gql(query)
+            query: gql(query),
         });
         return result.data;
     }
 
     /**
-     * Execute a GraphQL mutation
+     * Execute a GraphQL mutation against the Unraid server
+     *
+     * @param mutation - The GraphQL mutation string
+     * @param variables - Optional variables for the mutation
+     * @returns Promise resolving to the mutation result data
+     * @template T - Type of the expected mutation result
      */
     async mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T> {
         const result = await this.client.mutate<T>({
             mutation: gql(mutation),
-            variables
+            variables,
         });
         return result.data as T;
     }
 
     /**
-     * Subscribe to a GraphQL subscription
+     * Subscribe to a GraphQL subscription for real-time updates
+     *
+     * @param subscription - The GraphQL subscription string
+     * @param variables - Optional variables for the subscription
+     * @returns Observable that emits subscription results
+     * @template T - Type of the expected subscription result
      */
-    subscribe<T = unknown>(subscription: string, variables?: Record<string, unknown>) {
+    subscribe<T = unknown>(
+        subscription: string,
+        variables?: Record<string, unknown>,
+    ): ReturnType<typeof this.client.subscribe<T>> {
         return this.client.subscribe<T>({
             query: gql(subscription),
-            variables
+            variables,
         });
     }
 
     /**
-     * Run an introspection query to discover available subscriptions
+     * Run an introspection query to discover available GraphQL subscriptions.
+     * Useful for debugging and discovering the Unraid API schema.
+     *
+     * @returns Promise resolving to subscription type information or null if failed
      */
     async introspectSubscriptions(): Promise<unknown> {
         const introspectionQuery = `
@@ -167,7 +205,10 @@ export class UnraidApolloClient {
     }
 
     /**
-     * Dispose the client and close connections
+     * Dispose the client and close all connections.
+     * Should be called when the client is no longer needed.
+     *
+     * @returns Promise that resolves when cleanup is complete
      */
     async dispose(): Promise<void> {
         this.client.stop();
@@ -175,7 +216,9 @@ export class UnraidApolloClient {
     }
 
     /**
-     * Check if WebSocket is connected
+     * Check if the WebSocket connection is established
+     *
+     * @returns True if WebSocket client exists, false otherwise
      */
     isConnected(): boolean {
         // This is a simplified check - you might want to implement more sophisticated logic
@@ -183,7 +226,10 @@ export class UnraidApolloClient {
     }
 }
 
-// Export commonly used GraphQL subscriptions for Unraid metrics
+/**
+ * GraphQL subscription for comprehensive system metrics.
+ * Includes both CPU and memory statistics.
+ */
 export const METRICS_SUBSCRIPTION = `
     subscription MetricsSubscription {
         metrics {
@@ -200,6 +246,10 @@ export const METRICS_SUBSCRIPTION = `
     }
 `;
 
+/**
+ * GraphQL subscription for CPU metrics only.
+ * Returns the total CPU usage percentage.
+ */
 export const CPU_SUBSCRIPTION = `
     subscription CpuSubscription {
         cpu {
@@ -208,6 +258,10 @@ export const CPU_SUBSCRIPTION = `
     }
 `;
 
+/**
+ * GraphQL subscription for memory metrics.
+ * Includes total, used, free memory and usage percentage.
+ */
 export const MEMORY_SUBSCRIPTION = `
     subscription MemorySubscription {
         memory {
