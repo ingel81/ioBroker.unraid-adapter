@@ -10,6 +10,13 @@ export class PollingManager {
     private pollTimer?: ioBroker.Timeout;
     private stopRequested = false;
 
+    /**
+     * Create a new polling manager
+     *
+     * @param adapter - Adapter interface for logging and timers
+     * @param apolloClient - Apollo client for GraphQL queries
+     * @param onDataReceived - Callback function when data is received
+     */
     constructor(
         private readonly adapter: AdapterInterface,
         private readonly apolloClient: UnraidApolloClient,
@@ -18,6 +25,9 @@ export class PollingManager {
 
     /**
      * Start polling with the given interval
+     *
+     * @param pollIntervalMs - Polling interval in milliseconds
+     * @param definitions - Array of domain definitions to poll
      */
     start(pollIntervalMs: number, definitions: readonly DomainDefinition[]): void {
         if (this.stopRequested) {
@@ -48,6 +58,8 @@ export class PollingManager {
 
     /**
      * Execute a single polling cycle
+     *
+     * @param definitions - Array of domain definitions to poll
      */
     private async pollOnce(definitions: readonly DomainDefinition[]): Promise<void> {
         if (!definitions.length) {
@@ -75,6 +87,9 @@ export class PollingManager {
 
     /**
      * Schedule the next polling cycle
+     *
+     * @param pollIntervalMs - Polling interval in milliseconds
+     * @param definitions - Array of domain definitions to poll
      */
     private scheduleNextPoll(pollIntervalMs: number, definitions: readonly DomainDefinition[]): void {
         if (this.stopRequested) {
@@ -94,6 +109,8 @@ export class PollingManager {
 
     /**
      * Build a GraphQL query from domain definitions
+     *
+     * @param definitions - Array of domain definitions to build query from
      */
     private buildQuery(definitions: readonly DomainDefinition[]): string | null {
         const builder = new GraphQLSelectionBuilder();
@@ -105,6 +122,8 @@ export class PollingManager {
 
     /**
      * Log GraphQL response for debugging
+     *
+     * @param data - GraphQL response data to log
      */
     private logGraphQLResponse(data: Record<string, unknown>): void {
         try {
@@ -121,6 +140,8 @@ export class PollingManager {
 
     /**
      * Convert error to string description
+     *
+     * @param error - Error to describe
      */
     private describeError(error: unknown): string {
         if (error instanceof Error) {

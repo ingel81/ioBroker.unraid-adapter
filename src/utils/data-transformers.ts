@@ -5,6 +5,8 @@
 
 /**
  * Convert kilobytes to gigabytes with 2 decimal precision
+ *
+ * @param value - Value in kilobytes
  */
 export function kilobytesToGigabytes(value: unknown): number | null {
     const numeric = toNumberOrNull(value);
@@ -17,6 +19,8 @@ export function kilobytesToGigabytes(value: unknown): number | null {
 
 /**
  * Convert bytes to gigabytes with 2 decimal precision
+ *
+ * @param value - Value in bytes
  */
 export function bytesToGigabytes(value: unknown): number | null {
     const numeric = toNumberOrNull(value);
@@ -29,6 +33,9 @@ export function bytesToGigabytes(value: unknown): number | null {
 
 /**
  * Calculate usage percentage from used and total values
+ *
+ * @param used - Used value
+ * @param total - Total value
  */
 export function calculateUsagePercent(used: unknown, total: unknown): number | null {
     const usedNumeric = toNumberOrNull(used);
@@ -45,6 +52,8 @@ export function calculateUsagePercent(used: unknown, total: unknown): number | n
 
 /**
  * Convert BigInt values to number safely
+ *
+ * @param value - BigInt or numeric value to convert
  */
 export function bigIntToNumber(value: unknown): number | null {
     if (value === null || value === undefined) {
@@ -59,6 +68,8 @@ export function bigIntToNumber(value: unknown): number | null {
 
 /**
  * Convert any value to string or null
+ *
+ * @param value - Value to convert to string
  */
 export function toStringOrNull(value: unknown): string | null {
     if (value === null || value === undefined) {
@@ -75,6 +86,8 @@ export function toStringOrNull(value: unknown): string | null {
 
 /**
  * Convert any value to boolean or null
+ *
+ * @param value - Value to convert to boolean
  */
 export function toBooleanOrNull(value: unknown): boolean | null {
     if (value === null || value === undefined) {
@@ -88,6 +101,8 @@ export function toBooleanOrNull(value: unknown): boolean | null {
 
 /**
  * Convert any value to number or null
+ *
+ * @param value - Value to convert to number
  */
 export function toNumberOrNull(value: unknown): number | null {
     if (value === null || value === undefined) {
@@ -105,6 +120,9 @@ export function toNumberOrNull(value: unknown): number | null {
 
 /**
  * Resolve a value from an object by path
+ *
+ * @param source - Source object to resolve from
+ * @param path - Path segments to traverse
  */
 export function resolveValue(source: unknown, path: readonly string[]): unknown {
     let current: unknown = source;

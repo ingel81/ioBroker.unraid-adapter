@@ -14,6 +14,8 @@ exports.toNumberOrNull = toNumberOrNull;
 exports.resolveValue = resolveValue;
 /**
  * Convert kilobytes to gigabytes with 2 decimal precision
+ *
+ * @param value - Value in kilobytes
  */
 function kilobytesToGigabytes(value) {
     const numeric = toNumberOrNull(value);
@@ -25,6 +27,8 @@ function kilobytesToGigabytes(value) {
 }
 /**
  * Convert bytes to gigabytes with 2 decimal precision
+ *
+ * @param value - Value in bytes
  */
 function bytesToGigabytes(value) {
     const numeric = toNumberOrNull(value);
@@ -36,6 +40,9 @@ function bytesToGigabytes(value) {
 }
 /**
  * Calculate usage percentage from used and total values
+ *
+ * @param used - Used value
+ * @param total - Total value
  */
 function calculateUsagePercent(used, total) {
     const usedNumeric = toNumberOrNull(used);
@@ -49,6 +56,8 @@ function calculateUsagePercent(used, total) {
 }
 /**
  * Convert BigInt values to number safely
+ *
+ * @param value - BigInt or numeric value to convert
  */
 function bigIntToNumber(value) {
     if (value === null || value === undefined) {
@@ -62,6 +71,8 @@ function bigIntToNumber(value) {
 }
 /**
  * Convert any value to string or null
+ *
+ * @param value - Value to convert to string
  */
 function toStringOrNull(value) {
     if (value === null || value === undefined) {
@@ -77,6 +88,8 @@ function toStringOrNull(value) {
 }
 /**
  * Convert any value to boolean or null
+ *
+ * @param value - Value to convert to boolean
  */
 function toBooleanOrNull(value) {
     if (value === null || value === undefined) {
@@ -89,6 +102,8 @@ function toBooleanOrNull(value) {
 }
 /**
  * Convert any value to number or null
+ *
+ * @param value - Value to convert to number
  */
 function toNumberOrNull(value) {
     if (value === null || value === undefined) {
@@ -105,6 +120,9 @@ function toNumberOrNull(value) {
 }
 /**
  * Resolve a value from an object by path
+ *
+ * @param source - Source object to resolve from
+ * @param path - Path segments to traverse
  */
 function resolveValue(source, path) {
     let current = source;

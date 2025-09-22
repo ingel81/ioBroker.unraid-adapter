@@ -10,11 +10,18 @@ class StateManager {
     adapter;
     createdChannels = new Set();
     createdStates = new Set();
+    /**
+     * Create a new state manager
+     *
+     * @param adapter - Adapter interface for state operations
+     */
     constructor(adapter) {
         this.adapter = adapter;
     }
     /**
      * Initialize static states from domain definitions
+     *
+     * @param definitions - Array of domain definitions to initialize states from
      */
     async initializeStaticStates(definitions) {
         for (const definition of definitions) {
@@ -25,6 +32,9 @@ class StateManager {
     }
     /**
      * Apply domain definition to query result data
+     *
+     * @param definition - Domain definition to apply
+     * @param data - Query result data to process
      */
     async applyDefinition(definition, data) {
         // First check if this domain's data exists in the result
@@ -41,6 +51,10 @@ class StateManager {
     }
     /**
      * Create or update a state with proper object hierarchy
+     *
+     * @param id - State ID
+     * @param common - Common state properties
+     * @param value - State value to set
      */
     async writeState(id, common, value) {
         await this.ensureChannelHierarchy(id);
@@ -64,6 +78,9 @@ class StateManager {
     }
     /**
      * Update state value without creating object
+     *
+     * @param id - State ID
+     * @param value - State value to set
      */
     async updateState(id, value) {
         const normalizedValue = value === undefined ? null : value;
@@ -71,6 +88,8 @@ class StateManager {
     }
     /**
      * Clean up the object tree by removing objects not in allowed set
+     *
+     * @param allowedIds - Set of allowed object IDs to keep
      */
     async cleanupObjectTree(allowedIds) {
         const objects = await this.adapter.getAdapterObjectsAsync();
@@ -95,6 +114,8 @@ class StateManager {
     }
     /**
      * Collect all static object IDs from domain definitions
+     *
+     * @param definitions - Array of domain definitions to collect IDs from
      */
     collectStaticObjectIds(definitions) {
         const ids = new Set();

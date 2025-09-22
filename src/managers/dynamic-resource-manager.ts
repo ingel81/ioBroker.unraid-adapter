@@ -37,6 +37,12 @@ export class DynamicResourceManager {
     private vmsDetected = false;
     private vmUuids: Set<string> = new Set();
 
+    /**
+     * Create a new dynamic resource manager
+     *
+     * @param adapter - Adapter interface for logging and state management
+     * @param stateManager - State manager instance for creating/updating states
+     */
     constructor(
         private readonly adapter: AdapterInterface,
         private readonly stateManager: StateManager,
@@ -44,6 +50,8 @@ export class DynamicResourceManager {
 
     /**
      * Reset tracking for deselected domains
+     *
+     * @param selectedDomains - Set of selected domain IDs
      */
     resetTracking(selectedDomains: Set<string>): void {
         if (!selectedDomains.has('metrics.cpu')) {
@@ -80,6 +88,9 @@ export class DynamicResourceManager {
 
     /**
      * Handle dynamic CPU core state creation and updates
+     *
+     * @param data - Unraid data containing CPU metrics
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicCpuCores(data: Record<string, unknown>, selectedDomains: Set<string>): Promise<void> {
         if (!selectedDomains.has('metrics.cpu')) {
@@ -161,6 +172,9 @@ export class DynamicResourceManager {
 
     /**
      * Handle dynamic array disk state creation and updates
+     *
+     * @param data - Unraid data containing array disk information
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicArrayDisks(data: Record<string, unknown>, selectedDomains: Set<string>): Promise<void> {
         const hasDisks = selectedDomains.has('array.disks');
@@ -253,6 +267,9 @@ export class DynamicResourceManager {
 
     /**
      * Handle dynamic Docker container state creation and updates
+     *
+     * @param data - Unraid data containing Docker container information
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicDockerContainers(data: Record<string, unknown>, selectedDomains: Set<string>): Promise<void> {
         if (!selectedDomains.has('docker.containers')) {
@@ -350,6 +367,9 @@ export class DynamicResourceManager {
 
     /**
      * Handle dynamic share state creation and updates
+     *
+     * @param data - Unraid data containing share information
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicShares(data: Record<string, unknown>, selectedDomains: Set<string>): Promise<void> {
         if (!selectedDomains.has('shares.list')) {
@@ -457,6 +477,9 @@ export class DynamicResourceManager {
 
     /**
      * Handle dynamic VM state creation and updates
+     *
+     * @param data - Unraid data containing VM information
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicVms(data: Record<string, unknown>, selectedDomains: Set<string>): Promise<void> {
         if (!selectedDomains.has('vms.list')) {

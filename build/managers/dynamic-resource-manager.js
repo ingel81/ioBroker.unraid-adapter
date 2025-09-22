@@ -26,12 +26,20 @@ class DynamicResourceManager {
     // Dynamic VM tracking
     vmsDetected = false;
     vmUuids = new Set();
+    /**
+     * Create a new dynamic resource manager
+     *
+     * @param adapter - Adapter interface for logging and state management
+     * @param stateManager - State manager instance for creating/updating states
+     */
     constructor(adapter, stateManager) {
         this.adapter = adapter;
         this.stateManager = stateManager;
     }
     /**
      * Reset tracking for deselected domains
+     *
+     * @param selectedDomains - Set of selected domain IDs
      */
     resetTracking(selectedDomains) {
         if (!selectedDomains.has('metrics.cpu')) {
@@ -61,6 +69,9 @@ class DynamicResourceManager {
     }
     /**
      * Handle dynamic CPU core state creation and updates
+     *
+     * @param data - Unraid data containing CPU metrics
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicCpuCores(data, selectedDomains) {
         if (!selectedDomains.has('metrics.cpu')) {
@@ -104,6 +115,9 @@ class DynamicResourceManager {
     }
     /**
      * Handle dynamic array disk state creation and updates
+     *
+     * @param data - Unraid data containing array disk information
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicArrayDisks(data, selectedDomains) {
         const hasDisks = selectedDomains.has('array.disks');
@@ -165,6 +179,9 @@ class DynamicResourceManager {
     }
     /**
      * Handle dynamic Docker container state creation and updates
+     *
+     * @param data - Unraid data containing Docker container information
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicDockerContainers(data, selectedDomains) {
         if (!selectedDomains.has('docker.containers')) {
@@ -230,6 +247,9 @@ class DynamicResourceManager {
     }
     /**
      * Handle dynamic share state creation and updates
+     *
+     * @param data - Unraid data containing share information
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicShares(data, selectedDomains) {
         if (!selectedDomains.has('shares.list')) {
@@ -301,6 +321,9 @@ class DynamicResourceManager {
     }
     /**
      * Handle dynamic VM state creation and updates
+     *
+     * @param data - Unraid data containing VM information
+     * @param selectedDomains - Set of selected domain IDs
      */
     async handleDynamicVms(data, selectedDomains) {
         if (!selectedDomains.has('vms.list')) {

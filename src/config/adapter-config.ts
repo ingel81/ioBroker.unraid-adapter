@@ -23,6 +23,8 @@ export interface AdapterConfig {
  * Validate and normalize adapter configuration settings
  *
  * @param config - Raw configuration from ioBroker
+ * @param logger - Logger object for error messages
+ * @param logger.error - Function to log error messages
  * @returns Validated configuration or null if invalid
  */
 export function validateConfig(

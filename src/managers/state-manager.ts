@@ -10,10 +10,17 @@ export class StateManager {
     private readonly createdChannels = new Set<string>();
     private readonly createdStates = new Set<string>();
 
+    /**
+     * Create a new state manager
+     *
+     * @param adapter - Adapter interface for state operations
+     */
     constructor(private readonly adapter: AdapterInterface) {}
 
     /**
      * Initialize static states from domain definitions
+     *
+     * @param definitions - Array of domain definitions to initialize states from
      */
     async initializeStaticStates(definitions: readonly DomainDefinition[]): Promise<void> {
         for (const definition of definitions) {
@@ -25,6 +32,9 @@ export class StateManager {
 
     /**
      * Apply domain definition to query result data
+     *
+     * @param definition - Domain definition to apply
+     * @param data - Query result data to process
      */
     async applyDefinition(definition: DomainDefinition, data: Record<string, unknown>): Promise<void> {
         // First check if this domain's data exists in the result
@@ -43,6 +53,10 @@ export class StateManager {
 
     /**
      * Create or update a state with proper object hierarchy
+     *
+     * @param id - State ID
+     * @param common - Common state properties
+     * @param value - State value to set
      */
     async writeState(id: string, common: StateMapping['common'], value: unknown): Promise<void> {
         await this.ensureChannelHierarchy(id);
@@ -69,6 +83,9 @@ export class StateManager {
 
     /**
      * Update state value without creating object
+     *
+     * @param id - State ID
+     * @param value - State value to set
      */
     async updateState(id: string, value: unknown): Promise<void> {
         const normalizedValue = value === undefined ? null : (value as ioBroker.StateValue | null);
@@ -77,6 +94,8 @@ export class StateManager {
 
     /**
      * Clean up the object tree by removing objects not in allowed set
+     *
+     * @param allowedIds - Set of allowed object IDs to keep
      */
     async cleanupObjectTree(allowedIds: Set<string>): Promise<void> {
         const objects = await this.adapter.getAdapterObjectsAsync();
@@ -104,6 +123,8 @@ export class StateManager {
 
     /**
      * Collect all static object IDs from domain definitions
+     *
+     * @param definitions - Array of domain definitions to collect IDs from
      */
     collectStaticObjectIds(definitions: readonly DomainDefinition[]): Set<string> {
         const ids = new Set<string>();

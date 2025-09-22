@@ -11,6 +11,13 @@ class PollingManager {
     onDataReceived;
     pollTimer;
     stopRequested = false;
+    /**
+     * Create a new polling manager
+     *
+     * @param adapter - Adapter interface for logging and timers
+     * @param apolloClient - Apollo client for GraphQL queries
+     * @param onDataReceived - Callback function when data is received
+     */
     constructor(adapter, apolloClient, onDataReceived) {
         this.adapter = adapter;
         this.apolloClient = apolloClient;
@@ -18,6 +25,9 @@ class PollingManager {
     }
     /**
      * Start polling with the given interval
+     *
+     * @param pollIntervalMs - Polling interval in milliseconds
+     * @param definitions - Array of domain definitions to poll
      */
     start(pollIntervalMs, definitions) {
         if (this.stopRequested) {
@@ -44,6 +54,8 @@ class PollingManager {
     }
     /**
      * Execute a single polling cycle
+     *
+     * @param definitions - Array of domain definitions to poll
      */
     async pollOnce(definitions) {
         if (!definitions.length) {
@@ -69,6 +81,9 @@ class PollingManager {
     }
     /**
      * Schedule the next polling cycle
+     *
+     * @param pollIntervalMs - Polling interval in milliseconds
+     * @param definitions - Array of domain definitions to poll
      */
     scheduleNextPoll(pollIntervalMs, definitions) {
         if (this.stopRequested) {
@@ -86,6 +101,8 @@ class PollingManager {
     }
     /**
      * Build a GraphQL query from domain definitions
+     *
+     * @param definitions - Array of domain definitions to build query from
      */
     buildQuery(definitions) {
         const builder = new selection_builder_1.GraphQLSelectionBuilder();
@@ -96,6 +113,8 @@ class PollingManager {
     }
     /**
      * Log GraphQL response for debugging
+     *
+     * @param data - GraphQL response data to log
      */
     logGraphQLResponse(data) {
         try {
@@ -110,6 +129,8 @@ class PollingManager {
     }
     /**
      * Convert error to string description
+     *
+     * @param error - Error to describe
      */
     describeError(error) {
         if (error instanceof Error) {

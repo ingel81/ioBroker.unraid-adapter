@@ -122,6 +122,8 @@ class UnraidAdapter extends Adapter {
 
     /**
      * Temporary method for collecting static object IDs during initialization
+     *
+     * @param definitions - Array of domain definitions to collect IDs from
      */
     private collectStaticObjectIdsTemp(definitions: readonly DomainDefinition[]): Set<string> {
         const ids = new Set<string>();
