@@ -127,12 +127,15 @@ class DynamicResourceManager {
             (hasDisks && this.diskCount !== diskCount) ||
             (hasParities && this.parityCount !== parityCount) ||
             (hasCaches && this.cacheCount !== cacheCount)) {
-            if (hasDisks)
+            if (hasDisks) {
                 this.diskCount = diskCount;
-            if (hasParities)
+            }
+            if (hasParities) {
                 this.parityCount = parityCount;
-            if (hasCaches)
+            }
+            if (hasCaches) {
                 this.cacheCount = cacheCount;
+            }
             this.arrayDisksDetected = true;
             this.adapter.log.info(`Detected array configuration: ${diskCount} data disks, ${parityCount} parity disks, ${cacheCount} cache disks`);
             // Create count states only for selected domains
@@ -192,8 +195,9 @@ class DynamicResourceManager {
             for (const container of containers) {
                 const c = container;
                 const names = c.names;
-                if (!names || !Array.isArray(names) || names.length === 0)
+                if (!names || !Array.isArray(names) || names.length === 0) {
                     continue;
+                }
                 const name = names[0].replace(/^\//, '');
                 const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
                 await this.stateManager.writeState(`${containerPrefix}.name`, { type: 'string', role: 'text' }, null);
@@ -208,8 +212,9 @@ class DynamicResourceManager {
         for (const container of containers) {
             const c = container;
             const names = c.names;
-            if (!names || !Array.isArray(names) || names.length === 0)
+            if (!names || !Array.isArray(names) || names.length === 0) {
                 continue;
+            }
             const name = names[0].replace(/^\//, '');
             if (!this.containerNames.has(name)) {
                 continue;
@@ -253,8 +258,9 @@ class DynamicResourceManager {
             for (const share of shares) {
                 const s = share;
                 const name = s.name;
-                if (!name)
+                if (!name) {
                     continue;
+                }
                 const sharePrefix = `shares.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
                 await this.stateManager.writeState(`${sharePrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${sharePrefix}.freeGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
@@ -271,8 +277,9 @@ class DynamicResourceManager {
         for (const share of shares) {
             const s = share;
             const name = s.name;
-            if (!name || !this.shareNames.has(name))
+            if (!name || !this.shareNames.has(name)) {
                 continue;
+            }
             const sharePrefix = `shares.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
             await this.stateManager.updateState(`${sharePrefix}.name`, name);
             await this.stateManager.updateState(`${sharePrefix}.freeGb`, (0, data_transformers_1.kilobytesToGigabytes)(s.free));
@@ -282,7 +289,7 @@ class DynamicResourceManager {
             const usedKb = (0, data_transformers_1.toNumberOrNull)(s.used);
             const freeKb = (0, data_transformers_1.toNumberOrNull)(s.free);
             let usedPercent = null;
-            if (usedKb !== null && freeKb !== null && (usedKb + freeKb) > 0) {
+            if (usedKb !== null && freeKb !== null && usedKb + freeKb > 0) {
                 usedPercent = Math.round((usedKb / (usedKb + freeKb)) * 10000) / 100;
             }
             await this.stateManager.updateState(`${sharePrefix}.usedPercent`, usedPercent);
@@ -324,8 +331,9 @@ class DynamicResourceManager {
                 const v = vm;
                 const name = v.name;
                 const uuid = v.uuid;
-                if (!name || !uuid)
+                if (!name || !uuid) {
                     continue;
+                }
                 const vmPrefix = `vms.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
                 await this.stateManager.writeState(`${vmPrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${vmPrefix}.state`, { type: 'string', role: 'indicator.status' }, null);
@@ -337,8 +345,9 @@ class DynamicResourceManager {
             const v = vm;
             const name = v.name;
             const uuid = v.uuid;
-            if (!name || !uuid || !this.vmUuids.has(uuid))
+            if (!name || !uuid || !this.vmUuids.has(uuid)) {
                 continue;
+            }
             const vmPrefix = `vms.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
             await this.stateManager.updateState(`${vmPrefix}.name`, name);
             await this.stateManager.updateState(`${vmPrefix}.state`, (0, data_transformers_1.toStringOrNull)(v.state));
@@ -348,7 +357,7 @@ class DynamicResourceManager {
     async createDiskStates(prefix, disks) {
         for (let i = 0; i < disks.length; i++) {
             const disk = disks[i];
-            const diskPrefix = `${prefix}.${disk.idx ?? i}`;
+            const diskPrefix = `${prefix}.${String(disk.idx ?? i)}`;
             // Basic info states
             await this.stateManager.writeState(`${diskPrefix}.name`, { type: 'string', role: 'text' }, null);
             await this.stateManager.writeState(`${diskPrefix}.device`, { type: 'string', role: 'text' }, null);
@@ -379,7 +388,7 @@ class DynamicResourceManager {
     async updateDiskValues(prefix, disks) {
         for (const disk of disks) {
             const d = disk;
-            const diskPrefix = `${prefix}.${d.idx ?? disks.indexOf(disk)}`;
+            const diskPrefix = `${prefix}.${String(d.idx ?? disks.indexOf(disk))}`;
             await this.stateManager.updateState(`${diskPrefix}.name`, (0, data_transformers_1.toStringOrNull)(d.name));
             await this.stateManager.updateState(`${diskPrefix}.device`, (0, data_transformers_1.toStringOrNull)(d.device));
             await this.stateManager.updateState(`${diskPrefix}.status`, (0, data_transformers_1.toStringOrNull)(d.status));

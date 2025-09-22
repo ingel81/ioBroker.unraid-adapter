@@ -21,16 +21,19 @@ export interface AdapterConfig {
 
 /**
  * Validate and normalize adapter configuration settings
+ *
  * @param config - Raw configuration from ioBroker
  * @returns Validated configuration or null if invalid
  */
-export function validateConfig(config: Record<string, unknown>, logger?: { error: (msg: string) => void }): AdapterConfig | null {
-    const baseUrl = (config.baseUrl as string ?? '').trim();
-    const apiToken = (config.apiToken as string ?? '').trim();
+export function validateConfig(
+    config: Record<string, unknown>,
+    logger?: { error: (msg: string) => void },
+): AdapterConfig | null {
+    const baseUrl = ((config.baseUrl as string) ?? '').trim();
+    const apiToken = ((config.apiToken as string) ?? '').trim();
     const pollIntervalSecondsRaw = Number(config.pollIntervalSeconds ?? 60);
-    const pollIntervalSeconds = Number.isFinite(pollIntervalSecondsRaw) && pollIntervalSecondsRaw > 0
-        ? pollIntervalSecondsRaw
-        : 60;
+    const pollIntervalSeconds =
+        Number.isFinite(pollIntervalSecondsRaw) && pollIntervalSecondsRaw > 0 ? pollIntervalSecondsRaw : 60;
     const allowSelfSigned = Boolean(config.allowSelfSigned);
     const useSubscriptions = Boolean(config.useSubscriptions);
 

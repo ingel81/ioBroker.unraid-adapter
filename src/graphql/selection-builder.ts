@@ -14,6 +14,7 @@ export class GraphQLSelectionBuilder {
 
     /**
      * Add multiple root selections to the query builder
+     *
      * @param selections - Array of root selections to add
      */
     public addSelections(selections: readonly RootSelection[]): void {
@@ -28,6 +29,7 @@ export class GraphQLSelectionBuilder {
 
     /**
      * Build the complete GraphQL query string
+     *
      * @returns The formatted GraphQL query or null if no selections
      */
     public build(): string | null {
@@ -44,9 +46,7 @@ export class GraphQLSelectionBuilder {
                 continue;
             }
             const body = this.printNode(node, 8);
-            const section = body
-                ? `    ${root} {\n${body}\n    }`
-                : `    ${root}`;
+            const section = body ? `    ${root} {\n${body}\n    }` : `    ${root}`;
             sections.push(section);
         }
 
@@ -56,6 +56,7 @@ export class GraphQLSelectionBuilder {
 
     /**
      * Get or create a root node in the selection tree
+     *
      * @param root - Name of the root field
      * @returns The field node for the root
      */
@@ -71,6 +72,7 @@ export class GraphQLSelectionBuilder {
 
     /**
      * Recursively add field specifications to a target node
+     *
      * @param target - Target node to add fields to
      * @param fields - Field specifications to add
      */
@@ -89,6 +91,7 @@ export class GraphQLSelectionBuilder {
 
     /**
      * Recursively print a field node tree as GraphQL syntax
+     *
      * @param node - Node to print
      * @param indent - Current indentation level
      * @returns Formatted GraphQL selection string

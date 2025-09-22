@@ -24,6 +24,7 @@ class UnraidAdapter extends adapter_core_1.Adapter {
     staticObjectIds = new Set();
     /**
      * Creates a new Unraid adapter instance
+     *
      * @param options - Adapter options from ioBroker
      */
     constructor(options = {}) {
@@ -82,6 +83,7 @@ class UnraidAdapter extends adapter_core_1.Adapter {
     /**
      * Configure which domains should be queried based on settings.
      * Expands the selection to include dependencies.
+     *
      * @param enabledDomains - List of explicitly enabled domain IDs
      */
     configureSelection(enabledDomains) {
@@ -126,6 +128,7 @@ class UnraidAdapter extends adapter_core_1.Adapter {
     }
     /**
      * Handle data received from polling
+     *
      * @param data - GraphQL query result data
      */
     async handlePolledData(data) {
@@ -159,7 +162,7 @@ class UnraidAdapter extends adapter_core_1.Adapter {
                 onStateUpdate: async (id, value) => {
                     await this.stateManager.updateState(id, value);
                 },
-                onError: (error) => {
+                onError: error => {
                     this.log.warn(`Subscription error: ${error.message}`);
                 },
                 onConnectionLost: () => {
@@ -197,18 +200,14 @@ class UnraidAdapter extends adapter_core_1.Adapter {
         try {
             // Stop polling
             this.pollingManager?.stop();
-            // Stop subscriptions if active (fire and forget)
+            // Stop subscriptions if active
             if (this.subscriptionManager) {
-                this.subscriptionManager.stop()
-                    .catch((error) => {
-                    this.log.warn(`Failed to stop subscriptions: ${this.describeError(error)}`);
-                });
+                this.subscriptionManager.stop();
                 this.subscriptionManager = undefined;
             }
             // Dispose Apollo client (fire and forget)
             if (this.apolloClient) {
-                this.apolloClient.dispose()
-                    .catch((error) => {
+                this.apolloClient.dispose().catch(error => {
                     this.log.warn(`Failed to dispose Apollo client: ${this.describeError(error)}`);
                 });
                 this.apolloClient = undefined;

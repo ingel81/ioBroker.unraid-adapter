@@ -6,12 +6,7 @@ import { StateManager } from './managers/state-manager';
 import { DynamicResourceManager } from './managers/dynamic-resource-manager';
 import { PollingManager } from './managers/polling-manager';
 import { validateConfig, type AdapterConfig } from './config/adapter-config';
-import {
-    domainDefinitionById,
-    expandSelection,
-    type DomainDefinition,
-    type DomainId,
-} from './shared/unraid-domains';
+import { domainDefinitionById, expandSelection, type DomainDefinition, type DomainId } from './shared/unraid-domains';
 
 /**
  * Main adapter class for connecting ioBroker to Unraid servers.
@@ -31,6 +26,7 @@ class UnraidAdapter extends Adapter {
 
     /**
      * Creates a new Unraid adapter instance
+     *
      * @param options - Adapter options from ioBroker
      */
     public constructor(options: Partial<AdapterOptions> = {}) {
@@ -78,11 +74,7 @@ class UnraidAdapter extends Adapter {
             });
 
             // Initialize polling manager
-            this.pollingManager = new PollingManager(
-                this,
-                this.apolloClient,
-                this.handlePolledData.bind(this)
-            );
+            this.pollingManager = new PollingManager(this, this.apolloClient, this.handlePolledData.bind(this));
 
             // Clean up and initialize states
             await this.stateManager.cleanupObjectTree(this.staticObjectIds);
@@ -103,6 +95,7 @@ class UnraidAdapter extends Adapter {
     /**
      * Configure which domains should be queried based on settings.
      * Expands the selection to include dependencies.
+     *
      * @param enabledDomains - List of explicitly enabled domain IDs
      */
     private configureSelection(enabledDomains: readonly DomainId[]): void {
@@ -154,6 +147,7 @@ class UnraidAdapter extends Adapter {
 
     /**
      * Handle data received from polling
+     *
      * @param data - GraphQL query result data
      */
     private async handlePolledData(data: Record<string, unknown>): Promise<void> {
@@ -192,7 +186,7 @@ class UnraidAdapter extends Adapter {
                 onStateUpdate: async (id: string, value: unknown) => {
                     await this.stateManager!.updateState(id, value);
                 },
-                onError: (error) => {
+                onError: error => {
                     this.log.warn(`Subscription error: ${error.message}`);
                 },
                 onConnectionLost: () => {
@@ -233,21 +227,17 @@ class UnraidAdapter extends Adapter {
             // Stop polling
             this.pollingManager?.stop();
 
-            // Stop subscriptions if active (fire and forget)
+            // Stop subscriptions if active
             if (this.subscriptionManager) {
-                this.subscriptionManager.stop()
-                    .catch((error) => {
-                        this.log.warn(`Failed to stop subscriptions: ${this.describeError(error)}`);
-                    });
+                this.subscriptionManager.stop();
                 this.subscriptionManager = undefined;
             }
 
             // Dispose Apollo client (fire and forget)
             if (this.apolloClient) {
-                this.apolloClient.dispose()
-                    .catch((error) => {
-                        this.log.warn(`Failed to dispose Apollo client: ${this.describeError(error)}`);
-                    });
+                this.apolloClient.dispose().catch(error => {
+                    this.log.warn(`Failed to dispose Apollo client: ${this.describeError(error)}`);
+                });
                 this.apolloClient = undefined;
             }
 

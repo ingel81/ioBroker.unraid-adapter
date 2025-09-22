@@ -26,7 +26,7 @@ export class PollingManager {
 
         // Execute first poll immediately
         void this.pollOnce(definitions)
-            .catch((error) => {
+            .catch(error => {
                 this.adapter.log.error(`Initial polling failed: ${this.describeError(error)}`);
             })
             .finally(() => {
@@ -83,7 +83,7 @@ export class PollingManager {
 
         this.pollTimer = this.adapter.setTimeout(() => {
             void this.pollOnce(definitions)
-                .catch((error) => {
+                .catch(error => {
                     this.adapter.log.error(`Polling failed: ${this.describeError(error)}`);
                 })
                 .finally(() => {
@@ -113,7 +113,9 @@ export class PollingManager {
             const output = serialized.length > maxLength ? `${serialized.slice(0, maxLength)}…` : serialized;
             this.adapter.log.debug(`GraphQL response: ${output}`);
         } catch (error) {
-            this.adapter.log.debug(`GraphQL response received but could not be stringified: ${this.describeError(error)}`);
+            this.adapter.log.debug(
+                `GraphQL response received but could not be stringified: ${this.describeError(error)}`,
+            );
         }
     }
 

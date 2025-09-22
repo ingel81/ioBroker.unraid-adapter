@@ -9,6 +9,7 @@ class GraphQLSelectionBuilder {
     roots = new Map();
     /**
      * Add multiple root selections to the query builder
+     *
      * @param selections - Array of root selections to add
      */
     addSelections(selections) {
@@ -22,6 +23,7 @@ class GraphQLSelectionBuilder {
     }
     /**
      * Build the complete GraphQL query string
+     *
      * @returns The formatted GraphQL query or null if no selections
      */
     build() {
@@ -36,9 +38,7 @@ class GraphQLSelectionBuilder {
                 continue;
             }
             const body = this.printNode(node, 8);
-            const section = body
-                ? `    ${root} {\n${body}\n    }`
-                : `    ${root}`;
+            const section = body ? `    ${root} {\n${body}\n    }` : `    ${root}`;
             sections.push(section);
         }
         const queryBody = sections.join('\n');
@@ -46,6 +46,7 @@ class GraphQLSelectionBuilder {
     }
     /**
      * Get or create a root node in the selection tree
+     *
      * @param root - Name of the root field
      * @returns The field node for the root
      */
@@ -60,6 +61,7 @@ class GraphQLSelectionBuilder {
     }
     /**
      * Recursively add field specifications to a target node
+     *
      * @param target - Target node to add fields to
      * @param fields - Field specifications to add
      */
@@ -77,6 +79,7 @@ class GraphQLSelectionBuilder {
     }
     /**
      * Recursively print a field node tree as GraphQL syntax
+     *
      * @param node - Node to print
      * @param indent - Current indentation level
      * @returns Formatted GraphQL selection string

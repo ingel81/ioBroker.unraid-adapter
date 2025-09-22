@@ -18,7 +18,7 @@ import {
     domainNodeById,
 } from '../../../src/shared/unraid-domains';
 
-const styles = (theme: Theme) =>
+const styles = (theme: Theme): ReturnType<typeof createStyles> =>
     createStyles({
         tab: {
             maxWidth: 800,
@@ -114,6 +114,7 @@ allDomainIds.forEach((id, index) => treeOrder.set(id, index));
 
 /**
  * Sort domain IDs according to their position in the tree.
+ *
  * @param ids - Domain IDs to sort
  * @returns Sorted array of domain IDs
  */
@@ -128,6 +129,7 @@ const sortByTreeOrder = (ids: Iterable<DomainId>): DomainId[] => {
 
 /**
  * Check if a node and all its children are selected.
+ *
  * @param node - Domain node to check
  * @param selection - Current selection set
  * @returns True if node and all children are selected
@@ -141,11 +143,12 @@ const isNodeFullySelected = (node: DomainNode, selection: Set<DomainId>): boolea
         return true;
     }
 
-    return node.children.every((child) => isNodeFullySelected(child, selection));
+    return node.children.every(child => isNodeFullySelected(child, selection));
 };
 
 /**
  * Check if a node or any of its descendants are selected.
+ *
  * @param node - Domain node to check
  * @param selection - Current selection set
  * @returns True if node or any descendant is selected
@@ -159,11 +162,12 @@ const nodeHasSelectedDescendant = (node: DomainNode, selection: Set<DomainId>): 
         return false;
     }
 
-    return node.children.some((child) => nodeHasSelectedDescendant(child, selection));
+    return node.children.some(child => nodeHasSelectedDescendant(child, selection));
 };
 
 /**
  * Check if a node is partially selected (some but not all children).
+ *
  * @param node - Domain node to check
  * @param selection - Current selection set
  * @returns True if node has mixed selection state
@@ -173,7 +177,7 @@ const isNodePartiallySelected = (node: DomainNode, selection: Set<DomainId>): bo
         return false;
     }
 
-    const descendantSelected = node.children.some((child) => nodeHasSelectedDescendant(child, selection));
+    const descendantSelected = node.children.some(child => nodeHasSelectedDescendant(child, selection));
     if (!descendantSelected) {
         return false;
     }
@@ -188,6 +192,7 @@ const isNodePartiallySelected = (node: DomainNode, selection: Set<DomainId>): bo
 class Settings extends React.Component<SettingsProps, SettingsState> {
     /**
      * Initialize the settings component with expanded tree state.
+     *
      * @param props - Component properties
      */
     public constructor(props: SettingsProps) {
@@ -207,6 +212,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 
     /**
      * Render a text input field for adapter configuration.
+     *
      * @param title - Translation key for the label
      * @param attr - Configuration attribute name
      * @param type - Input field type
@@ -229,7 +235,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                 className={`${classes.input} ${classes.controlElement}`}
                 value={value}
                 type={type ?? 'text'}
-                onChange={(event) => {
+                onChange={event => {
                     const nextValue = event.target.value;
                     this.props.onChange(attr, nextValue as ioBroker.AdapterConfig[K]);
                 }}
@@ -242,6 +248,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 
     /**
      * Render the polling interval input field with validation.
+     *
      * @returns TextField component for poll interval
      */
     private renderPollInterval(): React.ReactNode {
@@ -255,7 +262,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                 value={value}
                 type="number"
                 inputProps={{ min: 5, step: 5 }}
-                onChange={(event) => {
+                onChange={event => {
                     const parsed = Number(event.target.value);
                     const sanitized = Number.isFinite(parsed) ? Math.floor(parsed) : value;
                     const nextValue = Math.max(5, sanitized || 0);
@@ -269,7 +276,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
     }
 
     private toggleDomainExpansion = (id: string): void => {
-        this.setState((prev) => {
+        this.setState(prev => {
             const next = new Set(prev.expandedDomainIds);
             if (next.has(id)) {
                 next.delete(id);
@@ -282,17 +289,17 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 
     private handleDomainToggle = (node: DomainNode, shouldSelect: boolean): void => {
         const currentRaw = Array.isArray(this.props.native.enabledDomains)
-            ? (this.props.native.enabledDomains as string[])
+            ? this.props.native.enabledDomains
             : [...defaultEnabledDomains];
         const current: DomainId[] = currentRaw.filter((id): id is DomainId => domainNodeById.has(id as DomainId));
         const next = new Set<DomainId>(current);
         const affectedIds = collectNodeIds(node);
 
         if (shouldSelect) {
-            affectedIds.forEach((id) => next.add(id));
-            getDomainAncestors(node.id).forEach((ancestorId) => next.add(ancestorId));
+            affectedIds.forEach(id => next.add(id));
+            getDomainAncestors(node.id).forEach(ancestorId => next.add(ancestorId));
         } else {
-            affectedIds.forEach((id) => next.delete(id));
+            affectedIds.forEach(id => next.delete(id));
             this.pruneAncestors(node.id, next);
         }
 
@@ -309,8 +316,8 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                     continue;
                 }
 
-                const descendantIds = collectNodeIds(ancestorNode).filter((id) => id !== ancestorId);
-                const hasSelectedDescendant = descendantIds.some((id) => selection.has(id));
+                const descendantIds = collectNodeIds(ancestorNode).filter(id => id !== ancestorId);
+                const hasSelectedDescendant = descendantIds.some(id => selection.has(id));
                 if (!hasSelectedDescendant) {
                     selection.delete(ancestorId);
                 }
@@ -320,6 +327,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 
     /**
      * Render a domain node in the selection tree.
+     *
      * @param node - Domain node to render
      * @param depth - Current depth in the tree
      * @param selection - Current selection set
@@ -334,7 +342,10 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 
         return (
             <React.Fragment key={node.id}>
-                <div className={classes.treeRow} style={{ paddingLeft: depth * 20 }}>
+                <div
+                    className={classes.treeRow}
+                    style={{ paddingLeft: depth * 20 }}
+                >
                     {hasChildren ? (
                         <button
                             type="button"
@@ -361,13 +372,17 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                     />
                 </div>
                 {node.description ? (
-                    <Typography variant="caption" color="textSecondary" className={classes.treeDescription}>
+                    <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        className={classes.treeDescription}
+                    >
                         {I18n.t(node.description as AdminWord)}
                     </Typography>
                 ) : null}
                 {hasChildren && isExpanded ? (
                     <div className={classes.treeChildren}>
-                        {node.children!.map((child) => this.renderDomainNode(child, depth + 1, selection))}
+                        {node.children!.map(child => this.renderDomainNode(child, depth + 1, selection))}
                     </div>
                 ) : null}
             </React.Fragment>
@@ -376,12 +391,13 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 
     /**
      * Render the complete settings UI.
+     *
      * @returns React component tree for settings
      */
     public render(): React.ReactNode {
         const { classes, native } = this.props;
         const enabledDomainsArrayRaw = Array.isArray(native.enabledDomains)
-            ? (native.enabledDomains as string[])
+            ? native.enabledDomains
             : [...defaultEnabledDomains];
         const enabledDomainsArray: DomainId[] = enabledDomainsArrayRaw.filter((id): id is DomainId =>
             domainNodeById.has(id as DomainId),
@@ -391,7 +407,10 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
         return (
             <form className={classes.tab}>
                 <div className={classes.section}>
-                    <Typography variant="h6" className={classes.sectionHeader}>
+                    <Typography
+                        variant="h6"
+                        className={classes.sectionHeader}
+                    >
                         {I18n.t('section.connection')}
                     </Typography>
                     {this.renderInput('baseUrl', 'baseUrl', 'text', {
@@ -414,7 +433,11 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                             }
                             label={I18n.t('allowSelfSigned')}
                         />
-                        <Typography variant="caption" color="textSecondary" style={{ display: 'block', marginLeft: 32 }}>
+                        <Typography
+                            variant="caption"
+                            color="textSecondary"
+                            style={{ display: 'block', marginLeft: 32 }}
+                        >
                             {I18n.t('allowSelfSigned_help')}
                         </Typography>
                     </div>
@@ -423,7 +446,10 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                 <Divider />
 
                 <div className={classes.section}>
-                    <Typography variant="h6" className={classes.sectionHeader}>
+                    <Typography
+                        variant="h6"
+                        className={classes.sectionHeader}
+                    >
                         {I18n.t('section.polling')}
                     </Typography>
                     {this.renderPollInterval()}
@@ -449,14 +475,21 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                 <Divider />
 
                 <div className={classes.section}>
-                    <Typography variant="h6" className={classes.sectionHeader}>
+                    <Typography
+                        variant="h6"
+                        className={classes.sectionHeader}
+                    >
                         {I18n.t('section.domains')}
                     </Typography>
-                    <Typography variant="body2" color="textSecondary" className={classes.controlElement}>
+                    <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        className={classes.controlElement}
+                    >
                         {I18n.t('enabledDomains_help')}
                     </Typography>
                     <div className={classes.treeContainer}>
-                        {domainTree.map((node) => this.renderDomainNode(node, 0, selection))}
+                        {domainTree.map(node => this.renderDomainNode(node, 0, selection))}
                     </div>
                 </div>
             </form>

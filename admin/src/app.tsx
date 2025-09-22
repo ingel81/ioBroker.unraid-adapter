@@ -32,6 +32,7 @@ type BaseTranslations = Record<string, Record<string, string>>;
 class App extends GenericApp {
     /**
      * Creates the application instance with translations.
+     *
      * @param props - Application properties from ioBroker
      */
     public constructor(props: AppProps) {
@@ -55,7 +56,6 @@ class App extends GenericApp {
         };
 
         super(props, extendedProps);
-
     }
 
     /**
@@ -68,6 +68,7 @@ class App extends GenericApp {
 
     /**
      * Render the application UI.
+     *
      * @returns The main application JSX element
      */
     public render(): JSX.Element {
@@ -79,10 +80,12 @@ class App extends GenericApp {
 
         return (
             <div className="App">
-                <div style={{
-                    maxHeight: 'calc(100vh - 75px)',
-                    overflowY: 'auto'
-                }}>
+                <div
+                    style={{
+                        maxHeight: 'calc(100vh - 75px)',
+                        overflowY: 'auto',
+                    }}
+                >
                     <Settings
                         native={nativeConfig}
                         onChange={(attr, value) => this.updateNativeValue(attr as string, value)}

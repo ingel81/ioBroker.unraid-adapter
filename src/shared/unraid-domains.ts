@@ -212,14 +212,12 @@ const domainTreeDefinition: readonly DomainNode[] = [
 
 /**
  * Build an index map of domain nodes by their IDs.
+ *
  * @param nodes - Domain nodes to index
  * @param acc - Accumulator map
  * @returns Map of domain IDs to nodes
  */
-const buildNodeIndex = (
-    nodes: readonly DomainNode[],
-    acc: Map<DomainId, DomainNode>,
-): Map<DomainId, DomainNode> => {
+const buildNodeIndex = (nodes: readonly DomainNode[], acc: Map<DomainId, DomainNode>): Map<DomainId, DomainNode> => {
     for (const node of nodes) {
         acc.set(node.id, node);
         if (node.children?.length) {
@@ -231,6 +229,7 @@ const buildNodeIndex = (
 
 /**
  * Collect all domain IDs from a list of nodes recursively.
+ *
  * @param nodes - Domain nodes to collect IDs from
  * @param acc - Accumulator array
  * @returns Array of all domain IDs
@@ -247,6 +246,7 @@ const collectIds = (nodes: readonly DomainNode[], acc: DomainId[] = []): DomainI
 
 /**
  * Collect domain IDs that are marked as default selected.
+ *
  * @param nodes - Domain nodes to check
  * @param acc - Accumulator array
  * @returns Array of default selected domain IDs
@@ -265,6 +265,7 @@ const collectDefaultIds = (nodes: readonly DomainNode[], acc: DomainId[] = []): 
 
 /**
  * Build an index of domain ancestors for quick lookup.
+ *
  * @param nodes - Domain nodes to process
  * @param ancestors - Current ancestor chain
  * @param acc - Accumulator map
@@ -306,6 +307,7 @@ const ancestorIndex = buildAncestorIndex(domainTreeDefinition, undefined, new Ma
 
 /**
  * Get all ancestor domain IDs for a given domain.
+ *
  * @param id - Domain ID to get ancestors for
  * @returns Array of ancestor domain IDs, ordered from parent to root
  */
@@ -336,11 +338,7 @@ const domainDefinitionsList: readonly DomainDefinition[] = [
                 fields: [
                     {
                         name: 'os',
-                        selection: [
-                            { name: 'distro' },
-                            { name: 'release' },
-                            { name: 'kernel' },
-                        ],
+                        selection: [{ name: 'distro' }, { name: 'release' }, { name: 'kernel' }],
                     },
                 ],
             },
@@ -553,11 +551,7 @@ const domainDefinitionsList: readonly DomainDefinition[] = [
                         selection: [
                             {
                                 name: 'kilobytes',
-                                selection: [
-                                    { name: 'total' },
-                                    { name: 'used' },
-                                    { name: 'free' },
-                                ],
+                                selection: [{ name: 'total' }, { name: 'used' }, { name: 'free' }],
                             },
                         ],
                     },
@@ -593,7 +587,9 @@ const domainDefinitionsList: readonly DomainDefinition[] = [
                 path: ['array', 'capacity'],
                 common: { type: 'number', role: 'value.percent', unit: '%' },
                 transform: (value: unknown): number | null => {
-                    if (!value || typeof value !== 'object') return null;
+                    if (!value || typeof value !== 'object') {
+                        return null;
+                    }
                     const capacity = value as Record<string, unknown>;
                     const kilobytes = capacity.kilobytes as Record<string, unknown> | undefined;
                     const total = numberOrNull(kilobytes?.total);
@@ -778,12 +774,7 @@ const domainDefinitionsList: readonly DomainDefinition[] = [
                 fields: [
                     {
                         name: 'domains',
-                        selection: [
-                            { name: 'id' },
-                            { name: 'name' },
-                            { name: 'state' },
-                            { name: 'uuid' },
-                        ],
+                        selection: [{ name: 'id' }, { name: 'name' }, { name: 'state' }, { name: 'uuid' }],
                     },
                 ],
             },
@@ -814,6 +805,7 @@ function numberOrNull(value: unknown): number | null {
 
 /**
  * Convert bytes to gigabytes.
+ *
  * @param value - Value in bytes
  * @returns Value in gigabytes or null if invalid
  */
@@ -835,7 +827,6 @@ function kilobytesToGigabytes(value: unknown): number | null {
     return Number.isFinite(gigabytes) ? Math.round(gigabytes * 100) / 100 : null;
 }
 
-
 /**
  * List of all domain definitions with their GraphQL selections and state mappings
  */
@@ -845,11 +836,12 @@ export const domainDefinitions = domainDefinitionsList;
  * Map of domain IDs to their definitions for quick lookup
  */
 export const domainDefinitionById = new Map<DomainId, DomainDefinition>(
-    domainDefinitionsList.map((definition) => [definition.id, definition]),
+    domainDefinitionsList.map(definition => [definition.id, definition]),
 );
 
 /**
  * Recursively collect all domain IDs from a node and its children.
+ *
  * @param node - Domain node to collect IDs from
  * @returns Array of all domain IDs in the node tree
  */
@@ -865,6 +857,7 @@ export const collectNodeIds = (node: DomainNode): readonly DomainId[] => {
 
 /**
  * Collect all selectable (leaf) domain IDs from a node tree.
+ *
  * @param node - Root node to traverse
  * @param acc - Accumulator set for IDs
  */
@@ -882,6 +875,7 @@ const collectSelectable = (node: DomainNode, acc: Set<DomainId>): void => {
 /**
  * Expand a domain selection to include all ancestors.
  * Ensures parent domains are included when child domains are selected.
+ *
  * @param selection - Initial domain selection
  * @returns Expanded selection including all necessary ancestors
  */

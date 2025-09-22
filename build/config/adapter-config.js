@@ -4,6 +4,7 @@ exports.validateConfig = validateConfig;
 const unraid_domains_1 = require("../shared/unraid-domains");
 /**
  * Validate and normalize adapter configuration settings
+ *
  * @param config - Raw configuration from ioBroker
  * @returns Validated configuration or null if invalid
  */
@@ -11,9 +12,7 @@ function validateConfig(config, logger) {
     const baseUrl = (config.baseUrl ?? '').trim();
     const apiToken = (config.apiToken ?? '').trim();
     const pollIntervalSecondsRaw = Number(config.pollIntervalSeconds ?? 60);
-    const pollIntervalSeconds = Number.isFinite(pollIntervalSecondsRaw) && pollIntervalSecondsRaw > 0
-        ? pollIntervalSecondsRaw
-        : 60;
+    const pollIntervalSeconds = Number.isFinite(pollIntervalSecondsRaw) && pollIntervalSecondsRaw > 0 ? pollIntervalSecondsRaw : 60;
     const allowSelfSigned = Boolean(config.allowSelfSigned);
     const useSubscriptions = Boolean(config.useSubscriptions);
     const enabledDomainsRaw = Array.isArray(config.enabledDomains)

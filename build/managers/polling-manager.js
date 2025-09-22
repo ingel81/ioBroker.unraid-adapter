@@ -25,7 +25,7 @@ class PollingManager {
         }
         // Execute first poll immediately
         void this.pollOnce(definitions)
-            .catch((error) => {
+            .catch(error => {
             this.adapter.log.error(`Initial polling failed: ${this.describeError(error)}`);
         })
             .finally(() => {
@@ -76,7 +76,7 @@ class PollingManager {
         }
         this.pollTimer = this.adapter.setTimeout(() => {
             void this.pollOnce(definitions)
-                .catch((error) => {
+                .catch(error => {
                 this.adapter.log.error(`Polling failed: ${this.describeError(error)}`);
             })
                 .finally(() => {
