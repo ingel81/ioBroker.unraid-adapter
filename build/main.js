@@ -5,6 +5,7 @@ const apollo_client_1 = require("./apollo-client");
 const state_manager_1 = require("./managers/state-manager");
 const dynamic_resource_manager_1 = require("./managers/dynamic-resource-manager");
 const polling_manager_1 = require("./managers/polling-manager");
+const object_manager_1 = require("./managers/object-manager");
 const control_manager_1 = require("./managers/control-manager");
 const adapter_config_1 = require("./config/adapter-config");
 const unraid_domains_1 = require("./shared/unraid-domains");
@@ -18,6 +19,7 @@ class UnraidAdapter extends adapter_core_1.Adapter {
     dynamicResourceManager;
     pollingManager;
     controlManager;
+    objectManager;
     effectiveSelection = new Set();
     selectedDefinitions = [];
     staticObjectIds = new Set();
@@ -55,7 +57,9 @@ class UnraidAdapter extends adapter_core_1.Adapter {
             }
             // Initialize managers
             this.stateManager = new state_manager_1.StateManager(this);
+            this.objectManager = new object_manager_1.ObjectManager(this, this.stateManager);
             this.dynamicResourceManager = new dynamic_resource_manager_1.DynamicResourceManager(this, this.stateManager);
+            this.dynamicResourceManager.setObjectManager(this.objectManager);
             // Initialize Apollo Client
             this.apolloClient = new apollo_client_1.UnraidApolloClient({
                 baseUrl: config.baseUrl,
@@ -66,8 +70,10 @@ class UnraidAdapter extends adapter_core_1.Adapter {
             this.pollingManager = new polling_manager_1.PollingManager(this, this.apolloClient, this.handlePolledData.bind(this));
             // Initialize control manager
             this.controlManager = new control_manager_1.ControlManager(this, this.apolloClient);
-            // Clean up and initialize states
-            await this.stateManager.cleanupObjectTree(this.staticObjectIds);
+            // Initialize object manager and clean up unselected domains
+            await this.objectManager.initialize(this.selectedDefinitions);
+            await this.objectManager.cleanupUnselectedDomains(this.effectiveSelection);
+            // Initialize static states
             await this.stateManager.initializeStaticStates(this.selectedDefinitions);
             // Subscription support disabled for now (API issues)
             // if (config.useSubscriptions) {
@@ -136,10 +142,12 @@ class UnraidAdapter extends adapter_core_1.Adapter {
      * @param data - GraphQL query result data
      */
     async handlePolledData(data) {
-        if (!this.stateManager || !this.dynamicResourceManager) {
+        if (!this.stateManager || !this.dynamicResourceManager || !this.objectManager) {
             this.log.error('Managers not initialized');
             return;
         }
+        // Start new poll cycle for object tracking
+        this.objectManager.beginPollCycle();
         // Handle dynamic resources
         await this.dynamicResourceManager.handleDynamicCpuCores(data, this.effectiveSelection);
         await this.dynamicResourceManager.handleDynamicArrayDisks(data, this.effectiveSelection);
@@ -183,6 +191,7 @@ class UnraidAdapter extends adapter_core_1.Adapter {
             this.dynamicResourceManager = undefined;
             this.pollingManager = undefined;
             this.controlManager = undefined;
+            this.objectManager = undefined;
             this.log.debug('Adapter cleanup completed');
         }
         catch (error) {

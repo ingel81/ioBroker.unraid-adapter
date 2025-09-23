@@ -1,5 +1,6 @@
 import type { AdapterInterface } from '../types/adapter-types';
 import type { StateManager } from './state-manager';
+import type { ObjectManager } from './object-manager';
 import {
     kilobytesToGigabytes,
     bytesToGigabytes,
@@ -38,6 +39,8 @@ export class DynamicResourceManager {
     private vmsDetected = false;
     private vmUuids: Set<string> = new Set();
 
+    private objectManager?: ObjectManager;
+
     /**
      * Create a new dynamic resource manager
      *
@@ -48,6 +51,15 @@ export class DynamicResourceManager {
         private readonly adapter: AdapterInterface,
         private readonly stateManager: StateManager,
     ) {}
+
+    /**
+     * Set the object manager for tracking dynamic resources
+     *
+     * @param objectManager - The ObjectManager instance for resource tracking
+     */
+    setObjectManager(objectManager: ObjectManager): void {
+        this.objectManager = objectManager;
+    }
 
     /**
      * Reset tracking for deselected domains
@@ -169,6 +181,15 @@ export class DynamicResourceManager {
             await this.stateManager.updateState(`${corePrefix}.percentIdle`, toNumberOrNull(core.percentIdle));
             await this.stateManager.updateState(`${corePrefix}.percentIrq`, toNumberOrNull(core.percentIrq));
         }
+
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map<string, any>();
+            for (let i = 0; i < cores.length; i++) {
+                resourceMap.set(String(i), { index: i });
+            }
+            await this.objectManager.handleDynamicResources('cpu', resourceMap);
+        }
     }
 
     /**
@@ -263,6 +284,17 @@ export class DynamicResourceManager {
         }
         if (hasCaches && caches.length > 0) {
             await this.updateDiskValues('array.caches', caches);
+        }
+
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const diskMap = new Map<string, any>();
+            for (const disk of disks) {
+                const d = disk as Record<string, unknown>;
+                const idx = toStringOrNull(d.idx) ?? String(disks.indexOf(disk));
+                diskMap.set(idx, { name: d.name, device: d.device });
+            }
+            await this.objectManager.handleDynamicResources('disk', diskMap);
         }
     }
 
@@ -366,6 +398,16 @@ export class DynamicResourceManager {
             await this.stateManager.updateState(`${containerPrefix}.status`, toStringOrNull(c.status));
             await this.stateManager.updateState(`${containerPrefix}.autoStart`, toBooleanOrNull(c.autoStart));
             await this.stateManager.updateState(`${containerPrefix}.sizeGb`, bytesToGigabytes(c.sizeRootFs));
+        }
+
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map<string, any>();
+            for (const name of containerNames) {
+                const sanitizedName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+                resourceMap.set(sanitizedName, { name });
+            }
+            await this.objectManager.handleDynamicResources('docker', resourceMap);
         }
     }
 
@@ -477,6 +519,16 @@ export class DynamicResourceManager {
             await this.stateManager.updateState(`${sharePrefix}.cow`, toStringOrNull(s.cow));
             await this.stateManager.updateState(`${sharePrefix}.color`, toStringOrNull(s.color));
         }
+
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map<string, any>();
+            for (const name of shareNames) {
+                const sanitizedName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+                resourceMap.set(sanitizedName, { name });
+            }
+            await this.objectManager.handleDynamicResources('share', resourceMap);
+        }
     }
 
     /**
@@ -559,6 +611,21 @@ export class DynamicResourceManager {
             await this.stateManager.updateState(`${vmPrefix}.name`, name);
             await this.stateManager.updateState(`${vmPrefix}.state`, toStringOrNull(v.state));
             await this.stateManager.updateState(`${vmPrefix}.uuid`, uuid);
+        }
+
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map<string, any>();
+            for (const vm of domains) {
+                const v = vm as Record<string, unknown>;
+                const name = v.name as string | null;
+                const uuid = v.uuid as string | null;
+                if (name && uuid && this.vmUuids.has(uuid)) {
+                    const sanitizedName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+                    resourceMap.set(sanitizedName, { name, uuid });
+                }
+            }
+            await this.objectManager.handleDynamicResources('vm', resourceMap);
         }
     }
 

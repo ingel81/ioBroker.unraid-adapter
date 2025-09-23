@@ -4,6 +4,7 @@ import { UnraidApolloClient } from './apollo-client';
 import { StateManager } from './managers/state-manager';
 import { DynamicResourceManager } from './managers/dynamic-resource-manager';
 import { PollingManager } from './managers/polling-manager';
+import { ObjectManager } from './managers/object-manager';
 import { ControlManager } from './managers/control-manager';
 import { validateConfig } from './config/adapter-config';
 import { domainDefinitionById, expandSelection, type DomainDefinition, type DomainId } from './shared/unraid-domains';
@@ -18,6 +19,7 @@ class UnraidAdapter extends Adapter {
     private dynamicResourceManager?: DynamicResourceManager;
     private pollingManager?: PollingManager;
     private controlManager?: ControlManager;
+    private objectManager?: ObjectManager;
 
     private effectiveSelection: Set<DomainId> = new Set();
     private selectedDefinitions: DomainDefinition[] = [];
@@ -62,7 +64,9 @@ class UnraidAdapter extends Adapter {
 
             // Initialize managers
             this.stateManager = new StateManager(this);
+            this.objectManager = new ObjectManager(this, this.stateManager);
             this.dynamicResourceManager = new DynamicResourceManager(this, this.stateManager);
+            this.dynamicResourceManager.setObjectManager(this.objectManager);
 
             // Initialize Apollo Client
             this.apolloClient = new UnraidApolloClient({
@@ -77,8 +81,11 @@ class UnraidAdapter extends Adapter {
             // Initialize control manager
             this.controlManager = new ControlManager(this, this.apolloClient);
 
-            // Clean up and initialize states
-            await this.stateManager.cleanupObjectTree(this.staticObjectIds);
+            // Initialize object manager and clean up unselected domains
+            await this.objectManager.initialize(this.selectedDefinitions);
+            await this.objectManager.cleanupUnselectedDomains(this.effectiveSelection);
+
+            // Initialize static states
             await this.stateManager.initializeStaticStates(this.selectedDefinitions);
 
             // Subscription support disabled for now (API issues)
@@ -157,10 +164,13 @@ class UnraidAdapter extends Adapter {
      * @param data - GraphQL query result data
      */
     private async handlePolledData(data: Record<string, unknown>): Promise<void> {
-        if (!this.stateManager || !this.dynamicResourceManager) {
+        if (!this.stateManager || !this.dynamicResourceManager || !this.objectManager) {
             this.log.error('Managers not initialized');
             return;
         }
+
+        // Start new poll cycle for object tracking
+        this.objectManager.beginPollCycle();
 
         // Handle dynamic resources
         await this.dynamicResourceManager.handleDynamicCpuCores(data, this.effectiveSelection);
@@ -210,6 +220,7 @@ class UnraidAdapter extends Adapter {
             this.dynamicResourceManager = undefined;
             this.pollingManager = undefined;
             this.controlManager = undefined;
+            this.objectManager = undefined;
 
             this.log.debug('Adapter cleanup completed');
         } catch (error) {

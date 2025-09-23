@@ -27,6 +27,7 @@ class DynamicResourceManager {
     // Dynamic VM tracking
     vmsDetected = false;
     vmUuids = new Set();
+    objectManager;
     /**
      * Create a new dynamic resource manager
      *
@@ -36,6 +37,14 @@ class DynamicResourceManager {
     constructor(adapter, stateManager) {
         this.adapter = adapter;
         this.stateManager = stateManager;
+    }
+    /**
+     * Set the object manager for tracking dynamic resources
+     *
+     * @param objectManager - The ObjectManager instance for resource tracking
+     */
+    setObjectManager(objectManager) {
+        this.objectManager = objectManager;
     }
     /**
      * Reset tracking for deselected domains
@@ -113,6 +122,14 @@ class DynamicResourceManager {
             await this.stateManager.updateState(`${corePrefix}.percentIdle`, (0, data_transformers_1.toNumberOrNull)(core.percentIdle));
             await this.stateManager.updateState(`${corePrefix}.percentIrq`, (0, data_transformers_1.toNumberOrNull)(core.percentIrq));
         }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map();
+            for (let i = 0; i < cores.length; i++) {
+                resourceMap.set(String(i), { index: i });
+            }
+            await this.objectManager.handleDynamicResources('cpu', resourceMap);
+        }
     }
     /**
      * Handle dynamic array disk state creation and updates
@@ -176,6 +193,16 @@ class DynamicResourceManager {
         }
         if (hasCaches && caches.length > 0) {
             await this.updateDiskValues('array.caches', caches);
+        }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const diskMap = new Map();
+            for (const disk of disks) {
+                const d = disk;
+                const idx = (0, data_transformers_1.toStringOrNull)(d.idx) ?? String(disks.indexOf(disk));
+                diskMap.set(idx, { name: d.name, device: d.device });
+            }
+            await this.objectManager.handleDynamicResources('disk', diskMap);
         }
     }
     /**
@@ -246,6 +273,15 @@ class DynamicResourceManager {
             await this.stateManager.updateState(`${containerPrefix}.status`, (0, data_transformers_1.toStringOrNull)(c.status));
             await this.stateManager.updateState(`${containerPrefix}.autoStart`, (0, data_transformers_1.toBooleanOrNull)(c.autoStart));
             await this.stateManager.updateState(`${containerPrefix}.sizeGb`, (0, data_transformers_1.bytesToGigabytes)(c.sizeRootFs));
+        }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map();
+            for (const name of containerNames) {
+                const sanitizedName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+                resourceMap.set(sanitizedName, { name });
+            }
+            await this.objectManager.handleDynamicResources('docker', resourceMap);
         }
     }
     /**
@@ -321,6 +357,15 @@ class DynamicResourceManager {
             await this.stateManager.updateState(`${sharePrefix}.cow`, (0, data_transformers_1.toStringOrNull)(s.cow));
             await this.stateManager.updateState(`${sharePrefix}.color`, (0, data_transformers_1.toStringOrNull)(s.color));
         }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map();
+            for (const name of shareNames) {
+                const sanitizedName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+                resourceMap.set(sanitizedName, { name });
+            }
+            await this.objectManager.handleDynamicResources('share', resourceMap);
+        }
     }
     /**
      * Handle dynamic VM state creation and updates
@@ -383,6 +428,20 @@ class DynamicResourceManager {
             await this.stateManager.updateState(`${vmPrefix}.name`, name);
             await this.stateManager.updateState(`${vmPrefix}.state`, (0, data_transformers_1.toStringOrNull)(v.state));
             await this.stateManager.updateState(`${vmPrefix}.uuid`, uuid);
+        }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map();
+            for (const vm of domains) {
+                const v = vm;
+                const name = v.name;
+                const uuid = v.uuid;
+                if (name && uuid && this.vmUuids.has(uuid)) {
+                    const sanitizedName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+                    resourceMap.set(sanitizedName, { name, uuid });
+                }
+            }
+            await this.objectManager.handleDynamicResources('vm', resourceMap);
         }
     }
     async createDiskStates(prefix, disks) {

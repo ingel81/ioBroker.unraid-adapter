@@ -74,7 +74,7 @@ class StateManager {
             this.createdStates.add(id);
         }
         const normalizedValue = value === undefined ? null : value;
-        await this.adapter.setStateAsync(id, { val: normalizedValue, ack: true });
+        await this.adapter.setStateAsync(id, normalizedValue, true);
     }
     /**
      * Update state value without creating object
@@ -84,7 +84,7 @@ class StateManager {
      */
     async updateState(id, value) {
         const normalizedValue = value === undefined ? null : value;
-        await this.adapter.setStateAsync(id, { val: normalizedValue, ack: true });
+        await this.adapter.setStateAsync(id, normalizedValue, true);
     }
     /**
      * Clean up the object tree by removing objects not in allowed set
@@ -157,11 +157,36 @@ class StateManager {
         const parts = id.split('.');
         for (let index = 1; index < parts.length; index += 1) {
             const channelId = parts.slice(0, index).join('.');
-            if (this.createdChannels.has(channelId)) {
-                continue;
+            let labelKey = unraid_domains_1.domainNodeById.get(channelId)?.label ?? channelId;
+            // For dynamic resources, use only the resource name as label
+            if (channelId.startsWith('docker.containers.') && index === 3) {
+                // Extract the container name (last part of the channelId)
+                labelKey = parts[2];
             }
-            const labelKey = unraid_domains_1.domainNodeById.get(channelId)?.label ?? channelId;
-            await this.adapter.setObjectNotExistsAsync(channelId, {
+            else if (channelId.startsWith('shares.') && index === 2) {
+                // Extract the share name
+                labelKey = parts[1];
+            }
+            else if (channelId.startsWith('vms.') && index === 2) {
+                // Extract the VM name
+                labelKey = parts[1];
+            }
+            else if (channelId.startsWith('array.disks.') && index === 3) {
+                // For array disks, show "Disk X" or parity/cache name
+                labelKey = `Disk ${parts[2]}`;
+            }
+            else if (channelId.startsWith('array.parities.') && index === 3) {
+                labelKey = `Parity ${parts[2]}`;
+            }
+            else if (channelId.startsWith('array.caches.') && index === 3) {
+                labelKey = `Cache ${parts[2]}`;
+            }
+            else if (channelId.startsWith('metrics.cpu.cores.') && index === 4) {
+                labelKey = `Core ${parts[3]}`;
+            }
+            // Always update the object to ensure the name is correct
+            // This will create it if it doesn't exist, or update it if it does
+            await this.adapter.setObjectAsync(channelId, {
                 type: 'channel',
                 common: {
                     name: labelKey,

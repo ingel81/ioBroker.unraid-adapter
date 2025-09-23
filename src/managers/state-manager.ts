@@ -78,7 +78,7 @@ export class StateManager {
         }
 
         const normalizedValue = value === undefined ? null : (value as ioBroker.StateValue | null);
-        await this.adapter.setStateAsync(id, { val: normalizedValue, ack: true });
+        await this.adapter.setStateAsync(id, normalizedValue, true);
     }
 
     /**
@@ -89,7 +89,7 @@ export class StateManager {
      */
     async updateState(id: string, value: unknown): Promise<void> {
         const normalizedValue = value === undefined ? null : (value as ioBroker.StateValue | null);
-        await this.adapter.setStateAsync(id, { val: normalizedValue, ack: true });
+        await this.adapter.setStateAsync(id, normalizedValue, true);
     }
 
     /**
@@ -174,18 +174,40 @@ export class StateManager {
         const parts = id.split('.');
         for (let index = 1; index < parts.length; index += 1) {
             const channelId = parts.slice(0, index).join('.');
-            if (this.createdChannels.has(channelId)) {
-                continue;
+
+            let labelKey = domainNodeById.get(channelId as DomainId)?.label ?? channelId;
+
+            // For dynamic resources, use only the resource name as label
+            if (channelId.startsWith('docker.containers.') && index === 3) {
+                // Extract the container name (last part of the channelId)
+                labelKey = parts[2];
+            } else if (channelId.startsWith('shares.') && index === 2) {
+                // Extract the share name
+                labelKey = parts[1];
+            } else if (channelId.startsWith('vms.') && index === 2) {
+                // Extract the VM name
+                labelKey = parts[1];
+            } else if (channelId.startsWith('array.disks.') && index === 3) {
+                // For array disks, show "Disk X" or parity/cache name
+                labelKey = `Disk ${parts[2]}`;
+            } else if (channelId.startsWith('array.parities.') && index === 3) {
+                labelKey = `Parity ${parts[2]}`;
+            } else if (channelId.startsWith('array.caches.') && index === 3) {
+                labelKey = `Cache ${parts[2]}`;
+            } else if (channelId.startsWith('metrics.cpu.cores.') && index === 4) {
+                labelKey = `Core ${parts[3]}`;
             }
 
-            const labelKey = domainNodeById.get(channelId as DomainId)?.label ?? channelId;
-            await this.adapter.setObjectNotExistsAsync(channelId, {
+            // Always update the object to ensure the name is correct
+            // This will create it if it doesn't exist, or update it if it does
+            await this.adapter.setObjectAsync(channelId, {
                 type: 'channel',
                 common: {
                     name: labelKey,
                 },
                 native: {},
             });
+
             this.createdChannels.add(channelId);
         }
     }
