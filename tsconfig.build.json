@@ -1,5 +1,5 @@
 {
-    "extends": "@tsconfig/node22/tsconfig.json",
+    "extends": "@tsconfig/node20/tsconfig.json",
     "compilerOptions": {
         "rootDir": "src",
         "outDir": "build",
@@ -8,7 +8,9 @@
         "sourceMap": true,
         "resolveJsonModule": true,
         "noEmit": false,
-        "allowJs": false
+        "allowJs": false,
+        "esModuleInterop": true,
+        "downlevelIteration": true
     },
     "include": ["src/**/*.ts", "lib/**/*.d.ts"],
     "exclude": ["build", "node_modules", "admin/src"]
