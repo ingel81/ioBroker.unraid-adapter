@@ -1,0 +1,80 @@
+{
+  "info": {
+    "en": "System Information",
+    "de": "Systeminformationen",
+    "ru": "Системная информация",
+    "pt": "Informações do sistema",
+    "nl": "Systeeminformatie",
+    "fr": "Informations système",
+    "it": "Informazioni di sistema",
+    "es": "Información del sistema",
+    "pl": "Informacje systemowe",
+    "uk": "Системна інформація",
+    "zh-cn": "系统信息"
+  },
+  "info.time": {
+    "en": "System Time",
+    "de": "Systemzeit",
+    "ru": "Системное время",
+    "pt": "Hora do sistema",
+    "nl": "Systeemtijd",
+    "fr": "Heure système",
+    "it": "Orario di sistema",
+    "es": "Hora del sistema",
+    "pl": "Czas systemowy",
+    "uk": "Системний час",
+    "zh-cn": "系统时间"
+  },
+  "info.os": {
+    "en": "Operating System",
+    "de": "Betriebssystem",
+    "ru": "Операционная система",
+    "pt": "Sistema operacional",
+    "nl": "Besturingssysteem",
+    "fr": "Système d'exploitation",
+    "it": "Sistema operativo",
+    "es": "Sistema operativo",
+    "pl": "System operacyjny",
+    "uk": "Операційна система",
+    "zh-cn": "操作系统"
+  },
+  "info.os.distro": {
+    "en": "Distribution",
+    "de": "Distribution",
+    "ru": "Дистрибутив",
+    "pt": "Distribuição",
+    "nl": "Distributie",
+    "fr": "Distribution",
+    "it": "Distribuzione",
+    "es": "Distribución",
+    "pl": "Dystrybucja",
+    "uk": "Дистрибутив",
+    "zh-cn": "发行版"
+  },
+  "info.os.release": {
+    "en": "Release Version",
+    "de": "Release-Version",
+    "ru": "Версия выпуска",
+    "pt": "Versão de lançamento",
+    "nl": "Releaseversie",
+    "fr": "Version de publication",
+    "it": "Versione di rilascio",
+    "es": "Versión de lanzamiento",
+    "pl": "Wersja wydania",
+    "uk": "Версія випуску",
+    "zh-cn": "发布版本"
+  },
+  "info.os.kernel": {
+    "en": "Kernel Version",
+    "de": "Kernel-Version",
+    "ru": "Версия ядра",
+    "pt": "Versão do kernel",
+    "nl": "Kernelversie",
+    "fr": "Version du noyau",
+    "it": "Versione del kernel",
+    "es": "Versión del núcleo",
+    "pl": "Wersja jądra",
+    "uk": "Версія ядра",
+    "zh-cn": "内核版本"
+  }
+}

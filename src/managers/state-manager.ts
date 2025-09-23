@@ -1,7 +1,7 @@
 import type { AdapterInterface } from '../types/adapter-types';
-import type { DomainDefinition, DomainId, StateMapping } from '../shared/unraid-domains';
-import { domainNodeById } from '../shared/unraid-domains';
+import type { DomainDefinition, StateMapping } from '../shared/unraid-domains';
 import { resolveValue } from '../utils/data-transformers';
+import stateTranslations from '../translations/state-names.json';
 
 /**
  * Manages ioBroker state objects and their values
@@ -61,21 +61,24 @@ export class StateManager {
     async writeState(id: string, common: StateMapping['common'], value: unknown): Promise<void> {
         await this.ensureChannelHierarchy(id);
 
-        if (!this.createdStates.has(id)) {
-            await this.adapter.setObjectNotExistsAsync(id, {
-                type: 'state',
-                common: {
-                    name: id,
-                    role: common.role,
-                    type: common.type,
-                    unit: common.unit,
-                    read: true,
-                    write: false,
-                },
-                native: {},
-            });
-            this.createdStates.add(id);
-        }
+        // Get translation object or use id as fallback
+        const translations = (stateTranslations as Record<string, any>)[id];
+        const name: ioBroker.StringOrTranslated = translations || id;
+
+        // Always update or create the state object to ensure translations are applied
+        await this.adapter.setObjectAsync(id, {
+            type: 'state',
+            common: {
+                name,
+                role: common.role,
+                type: common.type,
+                unit: common.unit,
+                read: true,
+                write: false,
+            },
+            native: {},
+        });
+        this.createdStates.add(id);
 
         const normalizedValue = value === undefined ? null : (value as ioBroker.StateValue | null);
         await this.adapter.setStateAsync(id, normalizedValue, true);
@@ -175,27 +178,29 @@ export class StateManager {
         for (let index = 1; index < parts.length; index += 1) {
             const channelId = parts.slice(0, index).join('.');
 
-            let labelKey = domainNodeById.get(channelId as DomainId)?.label ?? channelId;
+            // Try to get translation object, otherwise use channelId as fallback
+            const translations = (stateTranslations as Record<string, any>)[channelId];
+            let name: ioBroker.StringOrTranslated = translations || channelId;
 
-            // For dynamic resources, use only the resource name as label
+            // For dynamic resources, use only the resource name as label (no translations)
             if (channelId.startsWith('docker.containers.') && index === 3) {
                 // Extract the container name (last part of the channelId)
-                labelKey = parts[2];
+                name = parts[2];
             } else if (channelId.startsWith('shares.') && index === 2) {
                 // Extract the share name
-                labelKey = parts[1];
+                name = parts[1];
             } else if (channelId.startsWith('vms.') && index === 2) {
                 // Extract the VM name
-                labelKey = parts[1];
+                name = parts[1];
             } else if (channelId.startsWith('array.disks.') && index === 3) {
                 // For array disks, show "Disk X" or parity/cache name
-                labelKey = `Disk ${parts[2]}`;
+                name = `Disk ${parts[2]}`;
             } else if (channelId.startsWith('array.parities.') && index === 3) {
-                labelKey = `Parity ${parts[2]}`;
+                name = `Parity ${parts[2]}`;
             } else if (channelId.startsWith('array.caches.') && index === 3) {
-                labelKey = `Cache ${parts[2]}`;
+                name = `Cache ${parts[2]}`;
             } else if (channelId.startsWith('metrics.cpu.cores.') && index === 4) {
-                labelKey = `Core ${parts[3]}`;
+                name = `Core ${parts[3]}`;
             }
 
             // Always update the object to ensure the name is correct
@@ -203,7 +208,7 @@ export class StateManager {
             await this.adapter.setObjectAsync(channelId, {
                 type: 'channel',
                 common: {
-                    name: labelKey,
+                    name,
                 },
                 native: {},
             });
