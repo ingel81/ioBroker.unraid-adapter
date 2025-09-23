@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.expandSelection = exports.collectNodeIds = exports.domainDefinitionById = exports.domainDefinitions = exports.getDomainAncestors = exports.defaultEnabledDomains = exports.allDomainIds = exports.domainNodeById = exports.domainTree = void 0;
+exports.VM_CONTROL_STATES = exports.DOCKER_CONTROL_STATES = exports.expandSelection = exports.collectNodeIds = exports.domainDefinitionById = exports.domainDefinitions = exports.getDomainAncestors = exports.defaultEnabledDomains = exports.allDomainIds = exports.domainNodeById = exports.domainTree = void 0;
 /**
  * Complete domain tree structure for the admin UI.
  * Defines all available domains and their hierarchy.
@@ -610,6 +610,7 @@ const domainDefinitionsList = [
                     {
                         name: 'containers',
                         selection: [
+                            { name: 'id' },
                             { name: 'names' },
                             { name: 'image' },
                             { name: 'state' },
@@ -770,4 +771,122 @@ const expandSelection = (selection) => {
     return result;
 };
 exports.expandSelection = expandSelection;
+/**
+ * Docker container control state mappings
+ */
+exports.DOCKER_CONTROL_STATES = [
+    {
+        id: 'controls.start',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.start',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Start Container',
+        },
+    },
+    {
+        id: 'controls.stop',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.stop',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Stop Container',
+        },
+    },
+];
+/**
+ * Virtual machine control state mappings
+ */
+exports.VM_CONTROL_STATES = [
+    {
+        id: 'controls.start',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.start',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Start VM',
+        },
+    },
+    {
+        id: 'controls.stop',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.stop',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Stop VM (Graceful)',
+        },
+    },
+    {
+        id: 'controls.forceStop',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.stop',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Force Stop VM',
+        },
+    },
+    {
+        id: 'controls.pause',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.pause',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Pause VM',
+        },
+    },
+    {
+        id: 'controls.resume',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.resume',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Resume VM',
+        },
+    },
+    {
+        id: 'controls.reboot',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.restart',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Reboot VM',
+        },
+    },
+    {
+        id: 'controls.reset',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.restart',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Reset VM (Force)',
+        },
+    },
+];
 //# sourceMappingURL=unraid-domains.js.map

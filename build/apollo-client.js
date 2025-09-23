@@ -113,11 +113,26 @@ class UnraidApolloClient {
      * @template T - Type of the expected mutation result
      */
     async mutate(mutation, variables) {
-        const result = await this.client.mutate({
-            mutation: (0, core_1.gql)(mutation),
-            variables,
-        });
-        return result.data;
+        try {
+            const result = await this.client.mutate({
+                mutation: (0, core_1.gql)(mutation),
+                variables,
+            });
+            return result.data;
+        }
+        catch (error) {
+            // Log more details about GraphQL errors
+            if (error.graphQLErrors?.length > 0) {
+                console.error('GraphQL Errors:', JSON.stringify(error.graphQLErrors, null, 2));
+            }
+            if (error.networkError) {
+                console.error('Network Error:', error.networkError.message);
+                if (error.networkError.result) {
+                    console.error('Server Response:', JSON.stringify(error.networkError.result, null, 2));
+                }
+            }
+            throw error;
+        }
     }
     /**
      * Subscribe to a GraphQL subscription for real-time updates

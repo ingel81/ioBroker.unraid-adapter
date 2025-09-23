@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DynamicResourceManager = void 0;
 const data_transformers_1 = require("../utils/data-transformers");
+const unraid_domains_1 = require("../shared/unraid-domains");
 /**
  * Manages dynamic resource detection and state creation
  * for CPU cores, array disks, Docker containers, shares, and VMs
@@ -223,6 +224,8 @@ class DynamicResourceManager {
                 await this.stateManager.writeState(`${containerPrefix}.status`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.autoStart`, { type: 'boolean', role: 'indicator' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.sizeGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
+                // Create control buttons for container
+                await this.createDockerControlButtons(containerPrefix, c.id);
             }
         }
         // Update container values
@@ -361,6 +364,11 @@ class DynamicResourceManager {
                 await this.stateManager.writeState(`${vmPrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${vmPrefix}.state`, { type: 'string', role: 'indicator.status' }, null);
                 await this.stateManager.writeState(`${vmPrefix}.uuid`, { type: 'string', role: 'text' }, null);
+                // Create control buttons for VM
+                // Use the full prefixed ID for VM control
+                const vmId = v.id;
+                this.adapter.log.debug(`Creating VM control buttons for ${name}, using id: ${vmId}`);
+                await this.createVmControlButtons(vmPrefix, vmId);
             }
         }
         // Update VM values
@@ -438,6 +446,76 @@ class DynamicResourceManager {
             await this.stateManager.updateState(`${diskPrefix}.critical`, (0, data_transformers_1.toNumberOrNull)(d.critical));
             await this.stateManager.updateState(`${diskPrefix}.rotational`, (0, data_transformers_1.toBooleanOrNull)(d.rotational));
             await this.stateManager.updateState(`${diskPrefix}.transport`, (0, data_transformers_1.toStringOrNull)(d.transport));
+        }
+    }
+    /**
+     * Create control buttons for a Docker container
+     *
+     * @param containerPrefix - The state prefix for the container
+     * @param containerId - The container ID for mutations
+     */
+    async createDockerControlButtons(containerPrefix, containerId) {
+        if (!containerId) {
+            this.adapter.log.warn(`Container at ${containerPrefix} has no ID, skipping control buttons`);
+            return;
+        }
+        for (const control of unraid_domains_1.DOCKER_CONTROL_STATES) {
+            const stateId = `${containerPrefix}.${control.id}`;
+            await this.adapter.setObjectNotExistsAsync(stateId, {
+                type: 'state',
+                common: {
+                    type: control.common.type,
+                    role: control.common.role,
+                    read: control.common.read ?? true,
+                    write: control.common.write ?? true,
+                    def: control.common.def ?? false,
+                    name: control.common.name,
+                    desc: control.common.desc,
+                    custom: {},
+                },
+                native: {
+                    resourceType: 'docker',
+                    resourceId: containerId,
+                    action: control.id.split('.').pop(),
+                },
+            });
+            // Initialize button state to false
+            await this.adapter.setStateAsync(stateId, false, true);
+        }
+    }
+    /**
+     * Create control buttons for a VM
+     *
+     * @param vmPrefix - The state prefix for the VM
+     * @param vmId - The VM ID for mutations
+     */
+    async createVmControlButtons(vmPrefix, vmId) {
+        if (!vmId) {
+            this.adapter.log.warn(`VM at ${vmPrefix} has no ID, skipping control buttons`);
+            return;
+        }
+        for (const control of unraid_domains_1.VM_CONTROL_STATES) {
+            const stateId = `${vmPrefix}.${control.id}`;
+            await this.adapter.setObjectNotExistsAsync(stateId, {
+                type: 'state',
+                common: {
+                    type: control.common.type,
+                    role: control.common.role,
+                    read: control.common.read ?? true,
+                    write: control.common.write ?? true,
+                    def: control.common.def ?? false,
+                    name: control.common.name,
+                    desc: control.common.desc,
+                    custom: {},
+                },
+                native: {
+                    resourceType: 'vm',
+                    resourceId: vmId,
+                    action: control.id.split('.').pop(),
+                },
+            });
+            // Initialize button state to false
+            await this.adapter.setStateAsync(stateId, false, true);
         }
     }
 }

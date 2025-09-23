@@ -4,7 +4,8 @@ import { UnraidApolloClient } from './apollo-client';
 import { StateManager } from './managers/state-manager';
 import { DynamicResourceManager } from './managers/dynamic-resource-manager';
 import { PollingManager } from './managers/polling-manager';
-import { validateConfig, type AdapterConfig } from './config/adapter-config';
+import { ControlManager } from './managers/control-manager';
+import { validateConfig } from './config/adapter-config';
 import { domainDefinitionById, expandSelection, type DomainDefinition, type DomainId } from './shared/unraid-domains';
 
 /**
@@ -16,8 +17,8 @@ class UnraidAdapter extends Adapter {
     private stateManager?: StateManager;
     private dynamicResourceManager?: DynamicResourceManager;
     private pollingManager?: PollingManager;
+    private controlManager?: ControlManager;
 
-    private unraidConfig?: AdapterConfig;
     private effectiveSelection: Set<DomainId> = new Set();
     private selectedDefinitions: DomainDefinition[] = [];
     private staticObjectIds: Set<string> = new Set();
@@ -50,7 +51,6 @@ class UnraidAdapter extends Adapter {
                 this.log.warn('Adapter is idle because the configuration is incomplete.');
                 return;
             }
-            this.unraidConfig = config;
 
             // Configure domain selection
             this.configureSelection(config.enabledDomains);
@@ -74,6 +74,9 @@ class UnraidAdapter extends Adapter {
             // Initialize polling manager
             this.pollingManager = new PollingManager(this, this.apolloClient, this.handlePolledData.bind(this));
 
+            // Initialize control manager
+            this.controlManager = new ControlManager(this, this.apolloClient);
+
             // Clean up and initialize states
             await this.stateManager.cleanupObjectTree(this.staticObjectIds);
             await this.stateManager.initializeStaticStates(this.selectedDefinitions);
@@ -82,6 +85,9 @@ class UnraidAdapter extends Adapter {
             // if (config.useSubscriptions) {
             //     await this.initializeSubscriptions();
             // }
+
+            // Subscribe only to our own state changes
+            this.subscribeStates(`${this.namespace}.*`);
 
             // Start polling
             this.pollingManager.start(config.pollIntervalSeconds * 1000, this.selectedDefinitions);
@@ -169,9 +175,12 @@ class UnraidAdapter extends Adapter {
         }
     }
 
-    private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
-        if (state) {
-            this.log.debug(`State ${id} changed: ${state.val} (ack=${state.ack})`);
+    private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
+        // Delegate control operations to ControlManager
+        if (this.controlManager) {
+            await this.controlManager.handleStateChange(id, state);
+        } else {
+            this.log.warn(`Main: ControlManager not initialized, cannot handle state change for ${id}`);
         }
     }
 
@@ -200,6 +209,7 @@ class UnraidAdapter extends Adapter {
             this.stateManager = undefined;
             this.dynamicResourceManager = undefined;
             this.pollingManager = undefined;
+            this.controlManager = undefined;
 
             this.log.debug('Adapter cleanup completed');
         } catch (error) {
@@ -211,7 +221,7 @@ class UnraidAdapter extends Adapter {
     }
 }
 
-if (module.parent) {
+if (require.main !== module) {
     module.exports = (options: Partial<AdapterOptions> | undefined) => new UnraidAdapter(options);
 } else {
     (() => new UnraidAdapter())();

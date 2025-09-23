@@ -138,11 +138,25 @@ export class UnraidApolloClient {
      * @template T - Type of the expected mutation result
      */
     async mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T> {
-        const result = await this.client.mutate<T>({
-            mutation: gql(mutation),
-            variables,
-        });
-        return result.data as T;
+        try {
+            const result = await this.client.mutate<T>({
+                mutation: gql(mutation),
+                variables,
+            });
+            return result.data as T;
+        } catch (error: any) {
+            // Log more details about GraphQL errors
+            if (error.graphQLErrors?.length > 0) {
+                console.error('GraphQL Errors:', JSON.stringify(error.graphQLErrors, null, 2));
+            }
+            if (error.networkError) {
+                console.error('Network Error:', error.networkError.message);
+                if (error.networkError.result) {
+                    console.error('Server Response:', JSON.stringify(error.networkError.result, null, 2));
+                }
+            }
+            throw error;
+        }
     }
 
     /**

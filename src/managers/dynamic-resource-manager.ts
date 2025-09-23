@@ -9,6 +9,7 @@ import {
     toBooleanOrNull,
     bigIntToNumber,
 } from '../utils/data-transformers';
+import { DOCKER_CONTROL_STATES, VM_CONTROL_STATES } from '../shared/unraid-domains';
 
 /**
  * Manages dynamic resource detection and state creation
@@ -338,6 +339,9 @@ export class DynamicResourceManager {
                     { type: 'number', role: 'value', unit: 'GB' },
                     null,
                 );
+
+                // Create control buttons for container
+                await this.createDockerControlButtons(containerPrefix, c.id as string | null);
             }
         }
 
@@ -532,6 +536,12 @@ export class DynamicResourceManager {
                     null,
                 );
                 await this.stateManager.writeState(`${vmPrefix}.uuid`, { type: 'string', role: 'text' }, null);
+
+                // Create control buttons for VM
+                // Use the full prefixed ID for VM control
+                const vmId = v.id as string | null;
+                this.adapter.log.debug(`Creating VM control buttons for ${name}, using id: ${vmId}`);
+                await this.createVmControlButtons(vmPrefix, vmId);
             }
         }
 
@@ -673,6 +683,84 @@ export class DynamicResourceManager {
 
             await this.stateManager.updateState(`${diskPrefix}.rotational`, toBooleanOrNull(d.rotational));
             await this.stateManager.updateState(`${diskPrefix}.transport`, toStringOrNull(d.transport));
+        }
+    }
+
+    /**
+     * Create control buttons for a Docker container
+     *
+     * @param containerPrefix - The state prefix for the container
+     * @param containerId - The container ID for mutations
+     */
+    private async createDockerControlButtons(containerPrefix: string, containerId: string | null): Promise<void> {
+        if (!containerId) {
+            this.adapter.log.warn(`Container at ${containerPrefix} has no ID, skipping control buttons`);
+            return;
+        }
+
+        for (const control of DOCKER_CONTROL_STATES) {
+            const stateId = `${containerPrefix}.${control.id}`;
+
+            await this.adapter.setObjectNotExistsAsync(stateId, {
+                type: 'state',
+                common: {
+                    type: control.common.type,
+                    role: control.common.role,
+                    read: control.common.read ?? true,
+                    write: control.common.write ?? true,
+                    def: control.common.def ?? false,
+                    name: control.common.name,
+                    desc: control.common.desc,
+                    custom: {},
+                } as ioBroker.StateCommon,
+                native: {
+                    resourceType: 'docker',
+                    resourceId: containerId,
+                    action: control.id.split('.').pop(),
+                },
+            });
+
+            // Initialize button state to false
+            await this.adapter.setStateAsync(stateId, false, true);
+        }
+    }
+
+    /**
+     * Create control buttons for a VM
+     *
+     * @param vmPrefix - The state prefix for the VM
+     * @param vmId - The VM ID for mutations
+     */
+    private async createVmControlButtons(vmPrefix: string, vmId: string | null): Promise<void> {
+        if (!vmId) {
+            this.adapter.log.warn(`VM at ${vmPrefix} has no ID, skipping control buttons`);
+            return;
+        }
+
+        for (const control of VM_CONTROL_STATES) {
+            const stateId = `${vmPrefix}.${control.id}`;
+
+            await this.adapter.setObjectNotExistsAsync(stateId, {
+                type: 'state',
+                common: {
+                    type: control.common.type,
+                    role: control.common.role,
+                    read: control.common.read ?? true,
+                    write: control.common.write ?? true,
+                    def: control.common.def ?? false,
+                    name: control.common.name,
+                    desc: control.common.desc,
+                    custom: {},
+                } as ioBroker.StateCommon,
+                native: {
+                    resourceType: 'vm',
+                    resourceId: vmId,
+                    action: control.id.split('.').pop(),
+                },
+            });
+
+            // Initialize button state to false
+            await this.adapter.setStateAsync(stateId, false, true);
         }
     }
 }

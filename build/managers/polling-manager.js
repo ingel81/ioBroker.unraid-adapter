@@ -11,6 +11,7 @@ class PollingManager {
     onDataReceived;
     pollTimer;
     stopRequested = false;
+    currentDefinitions = [];
     /**
      * Create a new polling manager
      *
@@ -33,6 +34,7 @@ class PollingManager {
         if (this.stopRequested) {
             return;
         }
+        this.currentDefinitions = definitions;
         // Execute first poll immediately
         void this.pollOnce(definitions)
             .catch(error => {
@@ -40,6 +42,18 @@ class PollingManager {
         })
             .finally(() => {
             this.scheduleNextPoll(pollIntervalMs, definitions);
+        });
+    }
+    /**
+     * Trigger a manual poll (e.g., after a control action)
+     */
+    poll() {
+        if (this.currentDefinitions.length === 0) {
+            this.adapter.log.debug('Cannot poll - no definitions available');
+            return;
+        }
+        void this.pollOnce(this.currentDefinitions).catch(error => {
+            this.adapter.log.error(`Manual polling failed: ${this.describeError(error)}`);
         });
     }
     /**
