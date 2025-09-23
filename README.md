@@ -86,8 +86,7 @@ The adapter creates a structured tree of objects for the monitored data:
   Placeholder for the next version (at the beginning of the line):
   ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.5.3 (2025-09-23)
 
 - (ingel81) Support for node 20, 22 and 24
 

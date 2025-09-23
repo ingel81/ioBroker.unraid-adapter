@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unraid",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "news": {
+      "0.5.3": {
+        "en": "Support for node 20, 22 and 24",
+        "de": "Unterstützung für Knoten 20, 22 und 24",
+        "ru": "Поддержка узлов 20, 22 и 24",
+        "pt": "Suporte para nó 20, 22 e 24",
+        "nl": "Steun voor node 20, 22 en 24",
+        "fr": "Appui aux nœuds 20, 22 et 24",
+        "it": "Supporto per nodo 20, 22 e 24",
+        "es": "Apoyo al nodo 20, 22 y 24",
+        "pl": "Wsparcie dla węzła 20, 22 i 24",
+        "uk": "Підтримка вузла 20, 22 і 24",
+        "zh-cn": "支持节点20、22和24"
+      },
       "0.5.2": {
         "en": "Documentation\nMinor admin page improvements",
         "de": "Dokumentation\nMinor Admin Seite Verbesserungen",

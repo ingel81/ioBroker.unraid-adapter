@@ -1,6 +1,6 @@
 {
   "name": "iobroker.unraid",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Monitor and control Unraid servers via GraphQL API",
   "author": {
     "name": "ingel81",
