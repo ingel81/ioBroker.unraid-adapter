@@ -143,9 +143,11 @@ export function resolveValue(source: unknown, path: readonly string[]): unknown 
  * @returns Sanitized name safe for object IDs
  */
 export function sanitizeResourceName(name: string): string {
-    if (!name) return 'unknown';
+    if (!name) {
+        return 'unknown';
+    }
 
     return name
-        .replace(/^\//, '')  // Remove leading slash (Docker containers)
-        .replace(/[^a-zA-Z0-9_-]/g, '_');  // Keep only safe chars
+        .replace(/^\//, '') // Remove leading slash (Docker containers)
+        .replace(/[^a-zA-Z0-9_-]/g, '_'); // Keep only safe chars
 }

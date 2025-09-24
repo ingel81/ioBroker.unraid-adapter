@@ -143,8 +143,9 @@ function resolveValue(source, path) {
  * @returns Sanitized name safe for object IDs
  */
 function sanitizeResourceName(name) {
-    if (!name)
+    if (!name) {
         return 'unknown';
+    }
     return name
         .replace(/^\//, '') // Remove leading slash (Docker containers)
         .replace(/[^a-zA-Z0-9_-]/g, '_'); // Keep only safe chars
