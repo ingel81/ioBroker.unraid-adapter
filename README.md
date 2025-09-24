@@ -21,14 +21,11 @@ This adapter connects ioBroker to Unraid servers via the GraphQL API to monitor 
 
 - Monitor CPU and memory usage (including per-core statistics)
 - Track server status and network information
-- Monitor Docker containers status and resources
+- Monitor and control Docker containers (start/stop)
 - View array disks (data, parity, cache) with health information
-- Track network shares usage
-- Monitor virtual machines status
-- View system time and operating system details
-- Support for self-signed certificates
+- Monitor network shares (usage, configuration, file system details)
+- Monitor and control virtual machines (start/stop/pause/resume/reboot)
 - Configurable polling interval
-- Dynamic state creation based on available resources
 
 ## Configuration
 
@@ -70,6 +67,12 @@ This adapter connects ioBroker to Unraid servers via the GraphQL API to monitor 
 The adapter creates a structured tree of objects for the monitored data:
 
 ![Objects](docs/de/img/ioBroker_objects01.png)
+<br>
+
+![Docker Container Controls](docs/de/img/ioBroker_objects02.png)
+<br>
+
+![VM Controls](docs/de/img/ioBroker_objects03.png)
 
 ## Requirements
 
@@ -78,7 +81,6 @@ The adapter creates a structured tree of objects for the monitored data:
     - For version 7.2+: API support is built-in
 - Admin-level API token generated in Unraid web UI
 - Network access from ioBroker to Unraid server
-- ioBroker version 3.0 or higher
 
 ## Changelog
 
@@ -86,6 +88,13 @@ The adapter creates a structured tree of objects for the monitored data:
   Placeholder for the next version (at the beginning of the line):
   ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (ingel81) Added VM and Docker container control functionality
+- (ingel81) Code refactoring and cleanup
+- (ingel81) Translation
+
 ### 0.5.3 (2025-09-23)
 
 - (ingel81) Support for node 20, 22 and 24
