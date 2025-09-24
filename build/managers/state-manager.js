@@ -79,9 +79,8 @@ class StateManager {
                 translations = state_names_json_1.default[fieldName];
             }
         }
-        // If no translation found, use fallback with prefix to indicate missing translation
-        const name = translations ||
-            (fieldName ? `[TRANSLATE] ${fieldName}` : `[TRANSLATE] ${id}`);
+        // If no translation found, use fieldName or id as fallback
+        const name = translations || fieldName || id;
         // Always update or create the state object to ensure translations are applied
         await this.adapter.setObjectAsync(id, {
             type: 'state',
@@ -180,9 +179,9 @@ class StateManager {
         const parts = id.split('.');
         for (let index = 1; index < parts.length; index += 1) {
             const channelId = parts.slice(0, index).join('.');
-            // Try to get translation object, otherwise use channelId as fallback with prefix
+            // Try to get translation object, otherwise use channelId as fallback
             const translations = state_names_json_1.default[channelId];
-            let name = translations || `[TRANSLATE] ${channelId}`;
+            let name = translations || channelId;
             // For dynamic resources, use only the resource name as label (no translations)
             if (channelId.startsWith('docker.containers.') && index === 3) {
                 // Extract the container name (last part of the channelId)

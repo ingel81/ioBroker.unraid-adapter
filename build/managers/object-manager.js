@@ -65,19 +65,6 @@ class ObjectManager {
         }
     }
     /**
-     * Clean up objects that haven't been seen recently
-     * NOTE: This method is deprecated and does nothing
-     *
-     * @param _gracePeriodMs - Grace period in milliseconds (unused)
-     */
-    cleanupStaleObjects(_gracePeriodMs = 60000) {
-        // This method is deprecated and does nothing now
-        // Cleanup is handled by:
-        // 1. cleanupUnselectedDomains() at startup for unselected domains
-        // 2. handleDynamicResources() during runtime for removed resources
-        this.adapter.log.debug('cleanupStaleObjects called but is deprecated - cleanup handled elsewhere');
-    }
-    /**
      * Handle dynamic resources found in current poll
      *
      * @param resourceType - The type of resource being handled

@@ -65,6 +65,7 @@ class UnraidAdapter extends adapter_core_1.Adapter {
                 baseUrl: config.baseUrl,
                 apiToken: config.apiToken,
                 allowSelfSigned: config.allowSelfSigned,
+                logger: this.log,
             });
             // Initialize polling manager
             this.pollingManager = new polling_manager_1.PollingManager(this, this.apolloClient, this.handlePolledData.bind(this));

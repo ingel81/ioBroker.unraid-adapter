@@ -248,7 +248,8 @@ class DynamicResourceManager {
                     continue;
                 }
                 const name = names[0].replace(/^\//, '');
-                const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const sanitizedName = (0, data_transformers_1.sanitizeResourceName)(name);
+                const containerPrefix = `docker.containers.${sanitizedName}`;
                 await this.stateManager.writeState(`${containerPrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.image`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.state`, { type: 'string', role: 'indicator.status' }, null);
@@ -270,7 +271,8 @@ class DynamicResourceManager {
             if (!this.containerNames.has(name)) {
                 continue;
             }
-            const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+            const sanitizedName = (0, data_transformers_1.sanitizeResourceName)(name);
+            const containerPrefix = `docker.containers.${sanitizedName}`;
             await this.stateManager.updateState(`${containerPrefix}.name`, name);
             await this.stateManager.updateState(`${containerPrefix}.image`, (0, data_transformers_1.toStringOrNull)(c.image));
             await this.stateManager.updateState(`${containerPrefix}.state`, (0, data_transformers_1.toStringOrNull)(c.state));
@@ -324,7 +326,8 @@ class DynamicResourceManager {
                 if (!name) {
                     continue;
                 }
-                const sharePrefix = `shares.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const sanitizedName = (0, data_transformers_1.sanitizeResourceName)(name);
+                const sharePrefix = `shares.${sanitizedName}`;
                 await this.stateManager.writeState(`${sharePrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${sharePrefix}.freeGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
                 await this.stateManager.writeState(`${sharePrefix}.usedGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
@@ -409,7 +412,8 @@ class DynamicResourceManager {
                 if (!name || !uuid) {
                     continue;
                 }
-                const vmPrefix = `vms.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const sanitizedName = (0, data_transformers_1.sanitizeResourceName)(name);
+                const vmPrefix = `vms.${sanitizedName}`;
                 await this.stateManager.writeState(`${vmPrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${vmPrefix}.state`, { type: 'string', role: 'indicator.status' }, null);
                 await this.stateManager.writeState(`${vmPrefix}.uuid`, { type: 'string', role: 'text' }, null);
@@ -524,9 +528,9 @@ class DynamicResourceManager {
         }
         for (const control of unraid_domains_1.DOCKER_CONTROL_STATES) {
             const stateId = `${containerPrefix}.${control.id}`;
-            // Get translation object or use control.common.name as fallback with prefix
+            // Get translation object or use control.common.name as fallback
             const translations = state_names_json_1.default[control.id];
-            const name = translations || `[TRANSLATE] ${control.common.name}`;
+            const name = translations || control.common.name;
             // Always use setObjectAsync to ensure translations are updated
             await this.adapter.setObjectAsync(stateId, {
                 type: 'state',
@@ -563,9 +567,9 @@ class DynamicResourceManager {
         }
         for (const control of unraid_domains_1.VM_CONTROL_STATES) {
             const stateId = `${vmPrefix}.${control.id}`;
-            // Get translation object or use control.common.name as fallback with prefix
+            // Get translation object or use control.common.name as fallback
             const translations = state_names_json_1.default[control.id];
-            const name = translations || `[TRANSLATE] ${control.common.name}`;
+            const name = translations || control.common.name;
             // Always use setObjectAsync to ensure translations are updated
             await this.adapter.setObjectAsync(stateId, {
                 type: 'state',

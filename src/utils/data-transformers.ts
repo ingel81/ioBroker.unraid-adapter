@@ -134,3 +134,18 @@ export function resolveValue(source: unknown, path: readonly string[]): unknown 
     }
     return current === undefined ? null : current;
 }
+
+/**
+ * Sanitize resource names for use in ioBroker object IDs.
+ * Replaces invalid characters with underscores.
+ *
+ * @param name - Resource name to sanitize
+ * @returns Sanitized name safe for object IDs
+ */
+export function sanitizeResourceName(name: string): string {
+    if (!name) return 'unknown';
+
+    return name
+        .replace(/^\//, '')  // Remove leading slash (Docker containers)
+        .replace(/[^a-zA-Z0-9_-]/g, '_');  // Keep only safe chars
+}

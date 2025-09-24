@@ -83,9 +83,8 @@ export class StateManager {
             }
         }
 
-        // If no translation found, use fallback with prefix to indicate missing translation
-        const name: ioBroker.StringOrTranslated = translations ||
-            (fieldName ? `[TRANSLATE] ${fieldName}` : `[TRANSLATE] ${id}`);
+        // If no translation found, use fieldName or id as fallback
+        const name: ioBroker.StringOrTranslated = translations || fieldName || id;
 
         // Always update or create the state object to ensure translations are applied
         await this.adapter.setObjectAsync(id, {
@@ -200,9 +199,9 @@ export class StateManager {
         for (let index = 1; index < parts.length; index += 1) {
             const channelId = parts.slice(0, index).join('.');
 
-            // Try to get translation object, otherwise use channelId as fallback with prefix
+            // Try to get translation object, otherwise use channelId as fallback
             const translations = (stateTranslations as Record<string, any>)[channelId];
-            let name: ioBroker.StringOrTranslated = translations || `[TRANSLATE] ${channelId}`;
+            let name: ioBroker.StringOrTranslated = translations || channelId;
 
             // For dynamic resources, use only the resource name as label (no translations)
             if (channelId.startsWith('docker.containers.') && index === 3) {

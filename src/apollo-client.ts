@@ -4,7 +4,8 @@ import { getMainDefinition } from '@apollo/client/utilities';
 import { createClient } from 'graphql-ws';
 import type { ClientOptions } from 'ws';
 import WebSocket from 'ws';
-import { setGlobalDispatcher, Agent } from 'undici';
+import { fetch, Agent } from 'undici';
+import type { AdapterInterface } from './types/adapter-types';
 
 /**
  * Configuration options for the Unraid Apollo GraphQL client
@@ -16,6 +17,8 @@ export interface ApolloClientOptions {
     apiToken: string;
     /** Whether to allow self-signed SSL certificates (default: false) */
     allowSelfSigned?: boolean;
+    /** ioBroker adapter logger instance */
+    logger: AdapterInterface['log'];
 }
 
 /**
@@ -31,6 +34,8 @@ export class UnraidApolloClient {
     private readonly baseUrl: string;
     /** API token for authentication */
     private readonly apiToken: string;
+    /** Logger instance for structured logging */
+    private readonly logger: AdapterInterface['log'];
 
     /**
      * Creates a new Unraid Apollo client instance
@@ -40,17 +45,22 @@ export class UnraidApolloClient {
     constructor(options: ApolloClientOptions) {
         this.baseUrl = options.baseUrl.replace(/\/$/, '');
         this.apiToken = options.apiToken;
+        this.logger = options.logger;
 
-        // Configure undici for self-signed certificates if needed
-        if (options.allowSelfSigned && this.baseUrl.startsWith('https://')) {
-            setGlobalDispatcher(
-                new Agent({
-                    connect: {
-                        rejectUnauthorized: false,
-                    },
-                }),
-            );
-        }
+        // Create custom fetch for self-signed certificates if needed
+        const customFetch =
+            options.allowSelfSigned && this.baseUrl.startsWith('https://')
+                ? (url: any, init?: any): any => {
+                      return fetch(url, {
+                          ...init,
+                          dispatcher: new Agent({
+                              connect: {
+                                  rejectUnauthorized: false,
+                              },
+                          }),
+                      });
+                  }
+                : undefined;
 
         // Create WebSocket client for subscriptions
         const wsUrl = `${this.baseUrl.replace(/^http/, 'ws')}/graphql`;
@@ -85,6 +95,7 @@ export class UnraidApolloClient {
             headers: {
                 'x-api-key': this.apiToken,
             },
+            fetch: customFetch,
         });
 
         // Create WebSocket link for subscriptions
@@ -147,12 +158,12 @@ export class UnraidApolloClient {
         } catch (error: any) {
             // Log more details about GraphQL errors
             if (error.graphQLErrors?.length > 0) {
-                console.error('GraphQL Errors:', JSON.stringify(error.graphQLErrors, null, 2));
+                this.logger.error(`GraphQL Errors in mutation: ${JSON.stringify(error.graphQLErrors, null, 2)}`);
             }
             if (error.networkError) {
-                console.error('Network Error:', error.networkError.message);
+                this.logger.error(`Network Error in mutation: ${error.networkError.message}`);
                 if (error.networkError.result) {
-                    console.error('Server Response:', JSON.stringify(error.networkError.result, null, 2));
+                    this.logger.debug(`Server Response: ${JSON.stringify(error.networkError.result, null, 2)}`);
                 }
             }
             throw error;
@@ -213,7 +224,7 @@ export class UnraidApolloClient {
             const result = await this.query<{ __schema?: { subscriptionType?: unknown } }>(introspectionQuery);
             return result?.__schema?.subscriptionType;
         } catch (error) {
-            console.error('Failed to introspect subscriptions:', error);
+            this.logger.warn(`Failed to introspect subscriptions: ${error}`);
             return null;
         }
     }

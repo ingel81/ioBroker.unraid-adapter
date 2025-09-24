@@ -21,7 +21,13 @@ dev-server watch       # Dev server on :8081
   - `unraid-api.md` - GraphQL API reference
   - `development.md` - Development guide
 
-### Recent Changes (2025-09-21)
+### Recent Changes (2025-09-24)
+- **VM & Docker Control**: Control buttons for start/stop/pause/resume operations
+- **Object Manager**: Lifecycle management for dynamic objects with automatic cleanup
+- **Translation System**: Multi-language support with 102 state translations
+- **Code Cleanup**: Removed deprecated methods, improved state naming
+
+### Earlier Changes (2025-09-21)
 - Migrated to Apollo Client for all GraphQL operations
 - Dynamic CPU core detection implemented
 - Extended memory metrics (swap, available, buffcache)

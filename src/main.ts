@@ -73,6 +73,7 @@ class UnraidAdapter extends Adapter {
                 baseUrl: config.baseUrl,
                 apiToken: config.apiToken,
                 allowSelfSigned: config.allowSelfSigned,
+                logger: this.log,
             });
 
             // Initialize polling manager

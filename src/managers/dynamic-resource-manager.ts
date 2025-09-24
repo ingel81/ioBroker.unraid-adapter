@@ -9,6 +9,7 @@ import {
     toStringOrNull,
     toBooleanOrNull,
     bigIntToNumber,
+    sanitizeResourceName,
 } from '../utils/data-transformers';
 import { DOCKER_CONTROL_STATES, VM_CONTROL_STATES } from '../shared/unraid-domains';
 import stateTranslations from '../translations/state-names.json';
@@ -352,7 +353,8 @@ export class DynamicResourceManager {
                 }
 
                 const name = names[0].replace(/^\//, '');
-                const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const sanitizedName = sanitizeResourceName(name);
+                const containerPrefix = `docker.containers.${sanitizedName}`;
 
                 await this.stateManager.writeState(`${containerPrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.image`, { type: 'string', role: 'text' }, null);
@@ -391,7 +393,8 @@ export class DynamicResourceManager {
                 continue;
             }
 
-            const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+            const sanitizedName = sanitizeResourceName(name);
+            const containerPrefix = `docker.containers.${sanitizedName}`;
 
             await this.stateManager.updateState(`${containerPrefix}.name`, name);
             await this.stateManager.updateState(`${containerPrefix}.image`, toStringOrNull(c.image));
@@ -461,7 +464,8 @@ export class DynamicResourceManager {
                     continue;
                 }
 
-                const sharePrefix = `shares.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const sanitizedName = sanitizeResourceName(name);
+                const sharePrefix = `shares.${sanitizedName}`;
 
                 await this.stateManager.writeState(`${sharePrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(
@@ -580,7 +584,8 @@ export class DynamicResourceManager {
                     continue;
                 }
 
-                const vmPrefix = `vms.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const sanitizedName = sanitizeResourceName(name);
+                const vmPrefix = `vms.${sanitizedName}`;
 
                 await this.stateManager.writeState(`${vmPrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(
@@ -769,9 +774,9 @@ export class DynamicResourceManager {
         for (const control of DOCKER_CONTROL_STATES) {
             const stateId = `${containerPrefix}.${control.id}`;
 
-            // Get translation object or use control.common.name as fallback with prefix
+            // Get translation object or use control.common.name as fallback
             const translations = (stateTranslations as Record<string, any>)[control.id];
-            const name: ioBroker.StringOrTranslated = translations || `[TRANSLATE] ${control.common.name}`;
+            const name: ioBroker.StringOrTranslated = translations || control.common.name;
 
             // Always use setObjectAsync to ensure translations are updated
             await this.adapter.setObjectAsync(stateId, {
@@ -813,9 +818,9 @@ export class DynamicResourceManager {
         for (const control of VM_CONTROL_STATES) {
             const stateId = `${vmPrefix}.${control.id}`;
 
-            // Get translation object or use control.common.name as fallback with prefix
+            // Get translation object or use control.common.name as fallback
             const translations = (stateTranslations as Record<string, any>)[control.id];
-            const name: ioBroker.StringOrTranslated = translations || `[TRANSLATE] ${control.common.name}`;
+            const name: ioBroker.StringOrTranslated = translations || control.common.name;
 
             // Always use setObjectAsync to ensure translations are updated
             await this.adapter.setObjectAsync(stateId, {
