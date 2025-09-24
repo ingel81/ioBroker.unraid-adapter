@@ -9,6 +9,7 @@ import { GraphQLSelectionBuilder } from '../graphql/selection-builder';
 export class PollingManager {
     private pollTimer?: ioBroker.Timeout;
     private stopRequested = false;
+    private currentDefinitions: readonly DomainDefinition[] = [];
 
     /**
      * Create a new polling manager
@@ -34,6 +35,8 @@ export class PollingManager {
             return;
         }
 
+        this.currentDefinitions = definitions;
+
         // Execute first poll immediately
         void this.pollOnce(definitions)
             .catch(error => {
@@ -42,6 +45,20 @@ export class PollingManager {
             .finally(() => {
                 this.scheduleNextPoll(pollIntervalMs, definitions);
             });
+    }
+
+    /**
+     * Trigger a manual poll (e.g., after a control action)
+     */
+    poll(): void {
+        if (this.currentDefinitions.length === 0) {
+            this.adapter.log.debug('Cannot poll - no definitions available');
+            return;
+        }
+
+        void this.pollOnce(this.currentDefinitions).catch(error => {
+            this.adapter.log.error(`Manual polling failed: ${this.describeError(error)}`);
+        });
     }
 
     /**

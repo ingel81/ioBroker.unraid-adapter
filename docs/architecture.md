@@ -51,6 +51,45 @@ This adapter connects ioBroker to Unraid servers via GraphQL API, providing real
     - ioBroker state mappings
     - Value transformations (e.g., bytes to GB)
 
+## Manager Classes
+
+### StateManager
+Handles all ioBroker state operations:
+- Creates state objects with proper metadata
+- Updates state values with acknowledgment
+- Manages hierarchical channel/state structure
+- Tracks created states for cleanup
+- Handles translations for state names
+
+### PollingManager
+Controls data fetching cycle:
+- Executes GraphQL queries at configured intervals
+- Batches multiple domain queries efficiently
+- Handles connection errors gracefully
+- Manages polling lifecycle (start/stop)
+
+### DynamicResourceManager
+Creates states for resources discovered at runtime:
+- CPU cores (based on actual core count)
+- Array disks (data, parity, cache disks)
+- Docker containers (with control buttons)
+- Shares
+- Virtual machines (with control buttons)
+
+### ControlManager
+Manages control operations for Docker containers and VMs:
+- Handles button state changes
+- Executes GraphQL mutations for control actions
+- Supports start, stop, pause, resume, reboot operations
+- Resets button states after operations
+
+### ObjectManager
+Manages ioBroker object lifecycle:
+- Tracks all created objects (channels and states)
+- Handles cleanup of removed dynamic resources
+- Synchronizes object structure with server state
+- Manages object naming for dynamic resources
+
 ### Admin Interface (`admin/src/`)
 
 - React-based configuration UI with Material-UI

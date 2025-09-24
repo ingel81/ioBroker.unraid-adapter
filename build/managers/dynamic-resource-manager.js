@@ -1,7 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DynamicResourceManager = void 0;
 const data_transformers_1 = require("../utils/data-transformers");
+const unraid_domains_1 = require("../shared/unraid-domains");
+const state_names_json_1 = __importDefault(require("../translations/state-names.json"));
 /**
  * Manages dynamic resource detection and state creation
  * for CPU cores, array disks, Docker containers, shares, and VMs
@@ -26,6 +31,7 @@ class DynamicResourceManager {
     // Dynamic VM tracking
     vmsDetected = false;
     vmUuids = new Set();
+    objectManager;
     /**
      * Create a new dynamic resource manager
      *
@@ -35,6 +41,14 @@ class DynamicResourceManager {
     constructor(adapter, stateManager) {
         this.adapter = adapter;
         this.stateManager = stateManager;
+    }
+    /**
+     * Set the object manager for tracking dynamic resources
+     *
+     * @param objectManager - The ObjectManager instance for resource tracking
+     */
+    setObjectManager(objectManager) {
+        this.objectManager = objectManager;
     }
     /**
      * Reset tracking for deselected domains
@@ -112,6 +126,14 @@ class DynamicResourceManager {
             await this.stateManager.updateState(`${corePrefix}.percentIdle`, (0, data_transformers_1.toNumberOrNull)(core.percentIdle));
             await this.stateManager.updateState(`${corePrefix}.percentIrq`, (0, data_transformers_1.toNumberOrNull)(core.percentIrq));
         }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map();
+            for (let i = 0; i < cores.length; i++) {
+                resourceMap.set(String(i), { index: i });
+            }
+            await this.objectManager.handleDynamicResources('cpu', resourceMap);
+        }
     }
     /**
      * Handle dynamic array disk state creation and updates
@@ -176,6 +198,16 @@ class DynamicResourceManager {
         if (hasCaches && caches.length > 0) {
             await this.updateDiskValues('array.caches', caches);
         }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const diskMap = new Map();
+            for (const disk of disks) {
+                const d = disk;
+                const idx = (0, data_transformers_1.toStringOrNull)(d.idx) ?? String(disks.indexOf(disk));
+                diskMap.set(idx, { name: d.name, device: d.device });
+            }
+            await this.objectManager.handleDynamicResources('disk', diskMap);
+        }
     }
     /**
      * Handle dynamic Docker container state creation and updates
@@ -216,13 +248,16 @@ class DynamicResourceManager {
                     continue;
                 }
                 const name = names[0].replace(/^\//, '');
-                const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const sanitizedName = (0, data_transformers_1.sanitizeResourceName)(name);
+                const containerPrefix = `docker.containers.${sanitizedName}`;
                 await this.stateManager.writeState(`${containerPrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.image`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.state`, { type: 'string', role: 'indicator.status' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.status`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.autoStart`, { type: 'boolean', role: 'indicator' }, null);
                 await this.stateManager.writeState(`${containerPrefix}.sizeGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
+                // Create control buttons for container
+                await this.createDockerControlButtons(containerPrefix, c.id);
             }
         }
         // Update container values
@@ -236,13 +271,23 @@ class DynamicResourceManager {
             if (!this.containerNames.has(name)) {
                 continue;
             }
-            const containerPrefix = `docker.containers.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+            const sanitizedName = (0, data_transformers_1.sanitizeResourceName)(name);
+            const containerPrefix = `docker.containers.${sanitizedName}`;
             await this.stateManager.updateState(`${containerPrefix}.name`, name);
             await this.stateManager.updateState(`${containerPrefix}.image`, (0, data_transformers_1.toStringOrNull)(c.image));
             await this.stateManager.updateState(`${containerPrefix}.state`, (0, data_transformers_1.toStringOrNull)(c.state));
             await this.stateManager.updateState(`${containerPrefix}.status`, (0, data_transformers_1.toStringOrNull)(c.status));
             await this.stateManager.updateState(`${containerPrefix}.autoStart`, (0, data_transformers_1.toBooleanOrNull)(c.autoStart));
             await this.stateManager.updateState(`${containerPrefix}.sizeGb`, (0, data_transformers_1.bytesToGigabytes)(c.sizeRootFs));
+        }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map();
+            for (const name of containerNames) {
+                const sanitizedName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+                resourceMap.set(sanitizedName, { name });
+            }
+            await this.objectManager.handleDynamicResources('docker', resourceMap);
         }
     }
     /**
@@ -281,7 +326,8 @@ class DynamicResourceManager {
                 if (!name) {
                     continue;
                 }
-                const sharePrefix = `shares.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const sanitizedName = (0, data_transformers_1.sanitizeResourceName)(name);
+                const sharePrefix = `shares.${sanitizedName}`;
                 await this.stateManager.writeState(`${sharePrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${sharePrefix}.freeGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
                 await this.stateManager.writeState(`${sharePrefix}.usedGb`, { type: 'number', role: 'value', unit: 'GB' }, null);
@@ -317,6 +363,15 @@ class DynamicResourceManager {
             await this.stateManager.updateState(`${sharePrefix}.allocator`, (0, data_transformers_1.toStringOrNull)(s.allocator));
             await this.stateManager.updateState(`${sharePrefix}.cow`, (0, data_transformers_1.toStringOrNull)(s.cow));
             await this.stateManager.updateState(`${sharePrefix}.color`, (0, data_transformers_1.toStringOrNull)(s.color));
+        }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map();
+            for (const name of shareNames) {
+                const sanitizedName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+                resourceMap.set(sanitizedName, { name });
+            }
+            await this.objectManager.handleDynamicResources('share', resourceMap);
         }
     }
     /**
@@ -357,10 +412,16 @@ class DynamicResourceManager {
                 if (!name || !uuid) {
                     continue;
                 }
-                const vmPrefix = `vms.${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+                const sanitizedName = (0, data_transformers_1.sanitizeResourceName)(name);
+                const vmPrefix = `vms.${sanitizedName}`;
                 await this.stateManager.writeState(`${vmPrefix}.name`, { type: 'string', role: 'text' }, null);
                 await this.stateManager.writeState(`${vmPrefix}.state`, { type: 'string', role: 'indicator.status' }, null);
                 await this.stateManager.writeState(`${vmPrefix}.uuid`, { type: 'string', role: 'text' }, null);
+                // Create control buttons for VM
+                // Use the full prefixed ID for VM control
+                const vmId = v.id;
+                this.adapter.log.debug(`Creating VM control buttons for ${name}, using id: ${vmId}`);
+                await this.createVmControlButtons(vmPrefix, vmId);
             }
         }
         // Update VM values
@@ -375,6 +436,20 @@ class DynamicResourceManager {
             await this.stateManager.updateState(`${vmPrefix}.name`, name);
             await this.stateManager.updateState(`${vmPrefix}.state`, (0, data_transformers_1.toStringOrNull)(v.state));
             await this.stateManager.updateState(`${vmPrefix}.uuid`, uuid);
+        }
+        // Sync with ObjectManager
+        if (this.objectManager) {
+            const resourceMap = new Map();
+            for (const vm of domains) {
+                const v = vm;
+                const name = v.name;
+                const uuid = v.uuid;
+                if (name && uuid && this.vmUuids.has(uuid)) {
+                    const sanitizedName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+                    resourceMap.set(sanitizedName, { name, uuid });
+                }
+            }
+            await this.objectManager.handleDynamicResources('vm', resourceMap);
         }
     }
     async createDiskStates(prefix, disks) {
@@ -438,6 +513,84 @@ class DynamicResourceManager {
             await this.stateManager.updateState(`${diskPrefix}.critical`, (0, data_transformers_1.toNumberOrNull)(d.critical));
             await this.stateManager.updateState(`${diskPrefix}.rotational`, (0, data_transformers_1.toBooleanOrNull)(d.rotational));
             await this.stateManager.updateState(`${diskPrefix}.transport`, (0, data_transformers_1.toStringOrNull)(d.transport));
+        }
+    }
+    /**
+     * Create control buttons for a Docker container
+     *
+     * @param containerPrefix - The state prefix for the container
+     * @param containerId - The container ID for mutations
+     */
+    async createDockerControlButtons(containerPrefix, containerId) {
+        if (!containerId) {
+            this.adapter.log.warn(`Container at ${containerPrefix} has no ID, skipping control buttons`);
+            return;
+        }
+        for (const control of unraid_domains_1.DOCKER_CONTROL_STATES) {
+            const stateId = `${containerPrefix}.${control.id}`;
+            // Get translation object or use control.common.name as fallback
+            const translations = state_names_json_1.default[control.id];
+            const name = translations || control.common.name;
+            // Always use setObjectAsync to ensure translations are updated
+            await this.adapter.setObjectAsync(stateId, {
+                type: 'state',
+                common: {
+                    type: control.common.type,
+                    role: control.common.role,
+                    read: control.common.read ?? true,
+                    write: control.common.write ?? true,
+                    def: control.common.def ?? false,
+                    name,
+                    desc: control.common.desc,
+                    custom: {},
+                },
+                native: {
+                    resourceType: 'docker',
+                    resourceId: containerId,
+                    action: control.id.split('.').pop(),
+                },
+            });
+            // Initialize button state to false
+            await this.adapter.setStateAsync(stateId, false, true);
+        }
+    }
+    /**
+     * Create control buttons for a VM
+     *
+     * @param vmPrefix - The state prefix for the VM
+     * @param vmId - The VM ID for mutations
+     */
+    async createVmControlButtons(vmPrefix, vmId) {
+        if (!vmId) {
+            this.adapter.log.warn(`VM at ${vmPrefix} has no ID, skipping control buttons`);
+            return;
+        }
+        for (const control of unraid_domains_1.VM_CONTROL_STATES) {
+            const stateId = `${vmPrefix}.${control.id}`;
+            // Get translation object or use control.common.name as fallback
+            const translations = state_names_json_1.default[control.id];
+            const name = translations || control.common.name;
+            // Always use setObjectAsync to ensure translations are updated
+            await this.adapter.setObjectAsync(stateId, {
+                type: 'state',
+                common: {
+                    type: control.common.type,
+                    role: control.common.role,
+                    read: control.common.read ?? true,
+                    write: control.common.write ?? true,
+                    def: control.common.def ?? false,
+                    name,
+                    desc: control.common.desc,
+                    custom: {},
+                },
+                native: {
+                    resourceType: 'vm',
+                    resourceId: vmId,
+                    action: control.id.split('.').pop(),
+                },
+            });
+            // Initialize button state to false
+            await this.adapter.setStateAsync(stateId, false, true);
         }
     }
 }

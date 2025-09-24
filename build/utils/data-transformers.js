@@ -12,6 +12,7 @@ exports.toStringOrNull = toStringOrNull;
 exports.toBooleanOrNull = toBooleanOrNull;
 exports.toNumberOrNull = toNumberOrNull;
 exports.resolveValue = resolveValue;
+exports.sanitizeResourceName = sanitizeResourceName;
 /**
  * Convert kilobytes to gigabytes with 2 decimal precision
  *
@@ -133,5 +134,20 @@ function resolveValue(source, path) {
         current = current[segment];
     }
     return current === undefined ? null : current;
+}
+/**
+ * Sanitize resource names for use in ioBroker object IDs.
+ * Replaces invalid characters with underscores.
+ *
+ * @param name - Resource name to sanitize
+ * @returns Sanitized name safe for object IDs
+ */
+function sanitizeResourceName(name) {
+    if (!name) {
+        return 'unknown';
+    }
+    return name
+        .replace(/^\//, '') // Remove leading slash (Docker containers)
+        .replace(/[^a-zA-Z0-9_-]/g, '_'); // Keep only safe chars
 }
 //# sourceMappingURL=data-transformers.js.map

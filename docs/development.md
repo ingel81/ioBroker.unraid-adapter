@@ -7,15 +7,19 @@ ioBroker.unraid-adapter/
 ├── src/                    # TypeScript source files
 │   ├── main.ts            # Main adapter logic
 │   ├── apollo-client.ts   # GraphQL client setup
-│   ├── subscription-manager.ts # WebSocket subscription handling
 │   ├── config/            # Configuration management
 │   │   └── adapter-config.ts
 │   ├── graphql/           # GraphQL utilities
-│   │   └── selection-builder.ts
+│   │   ├── selection-builder.ts
+│   │   └── mutations.ts   # Control operation mutations
 │   ├── managers/          # Core managers
+│   │   ├── control-manager.ts
 │   │   ├── dynamic-resource-manager.ts
+│   │   ├── object-manager.ts
 │   │   ├── polling-manager.ts
 │   │   └── state-manager.ts
+│   ├── translations/      # i18n for states
+│   │   └── state-names.json
 │   ├── shared/            # Shared types and definitions
 │   │   └── unraid-domains.ts
 │   ├── types/             # TypeScript type definitions
@@ -321,10 +325,11 @@ npm run release
 - Reliable polling mode with configurable intervals
 
 ### Manager-Based Architecture
-- **StateManager**: Handles all ioBroker state operations
+- **StateManager**: Handles all ioBroker state operations and translations
 - **PollingManager**: Controls polling cycles and queries
 - **DynamicResourceManager**: Creates dynamic states for CPU cores, containers, etc.
-- **SubscriptionManager**: Ready for when subscriptions are re-enabled
+- **ControlManager**: Manages control operations for Docker/VMs
+- **ObjectManager**: Tracks and manages ioBroker object lifecycle
 
 ### ESLint 9 Migration
 - Flat config format (eslint.config.mjs)

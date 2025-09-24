@@ -23,6 +23,8 @@ class UnraidApolloClient {
     baseUrl;
     /** API token for authentication */
     apiToken;
+    /** Logger instance for structured logging */
+    logger;
     /**
      * Creates a new Unraid Apollo client instance
      *
@@ -31,14 +33,20 @@ class UnraidApolloClient {
     constructor(options) {
         this.baseUrl = options.baseUrl.replace(/\/$/, '');
         this.apiToken = options.apiToken;
-        // Configure undici for self-signed certificates if needed
-        if (options.allowSelfSigned && this.baseUrl.startsWith('https://')) {
-            (0, undici_1.setGlobalDispatcher)(new undici_1.Agent({
-                connect: {
-                    rejectUnauthorized: false,
-                },
-            }));
-        }
+        this.logger = options.logger;
+        // Create custom fetch for self-signed certificates if needed
+        const customFetch = options.allowSelfSigned && this.baseUrl.startsWith('https://')
+            ? (url, init) => {
+                return (0, undici_1.fetch)(url, {
+                    ...init,
+                    dispatcher: new undici_1.Agent({
+                        connect: {
+                            rejectUnauthorized: false,
+                        },
+                    }),
+                });
+            }
+            : undefined;
         // Create WebSocket client for subscriptions
         const wsUrl = `${this.baseUrl.replace(/^http/, 'ws')}/graphql`;
         // Create a custom WebSocket class that includes our options
@@ -69,6 +77,7 @@ class UnraidApolloClient {
             headers: {
                 'x-api-key': this.apiToken,
             },
+            fetch: customFetch,
         });
         // Create WebSocket link for subscriptions
         const wsLink = new subscriptions_1.GraphQLWsLink(this.wsClient);
@@ -113,11 +122,26 @@ class UnraidApolloClient {
      * @template T - Type of the expected mutation result
      */
     async mutate(mutation, variables) {
-        const result = await this.client.mutate({
-            mutation: (0, core_1.gql)(mutation),
-            variables,
-        });
-        return result.data;
+        try {
+            const result = await this.client.mutate({
+                mutation: (0, core_1.gql)(mutation),
+                variables,
+            });
+            return result.data;
+        }
+        catch (error) {
+            // Log more details about GraphQL errors
+            if (error.graphQLErrors?.length > 0) {
+                this.logger.error(`GraphQL Errors in mutation: ${JSON.stringify(error.graphQLErrors, null, 2)}`);
+            }
+            if (error.networkError) {
+                this.logger.error(`Network Error in mutation: ${error.networkError.message}`);
+                if (error.networkError.result) {
+                    this.logger.debug(`Server Response: ${JSON.stringify(error.networkError.result, null, 2)}`);
+                }
+            }
+            throw error;
+        }
     }
     /**
      * Subscribe to a GraphQL subscription for real-time updates
@@ -169,7 +193,7 @@ class UnraidApolloClient {
             return result?.__schema?.subscriptionType;
         }
         catch (error) {
-            console.error('Failed to introspect subscriptions:', error);
+            this.logger.warn(`Failed to introspect subscriptions: ${error}`);
             return null;
         }
     }

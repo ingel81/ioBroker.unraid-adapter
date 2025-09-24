@@ -82,8 +82,18 @@ export interface StateMapping {
         type: StateValueType;
         /** Role of the state in ioBroker */
         role: string;
+        /** Whether the state is readable */
+        read?: boolean;
+        /** Whether the state is writable */
+        write?: boolean;
+        /** Default value for the state */
+        def?: boolean | number | string | null;
         /** Optional unit of measurement */
         unit?: string;
+        /** Optional name for the state */
+        name?: string;
+        /** Optional description for the state */
+        desc?: string;
     };
     /** Optional transformation function for the value */
     transform?: (value: unknown) => unknown;
@@ -722,6 +732,7 @@ const domainDefinitionsList: readonly DomainDefinition[] = [
                     {
                         name: 'containers',
                         selection: [
+                            { name: 'id' },
                             { name: 'names' },
                             { name: 'image' },
                             { name: 'state' },
@@ -890,3 +901,123 @@ export const expandSelection = (selection: Iterable<DomainId>): Set<DomainId> =>
     }
     return result;
 };
+
+/**
+ * Docker container control state mappings
+ */
+export const DOCKER_CONTROL_STATES: StateMapping[] = [
+    {
+        id: 'commands.start',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.start',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Start Container',
+        },
+    },
+    {
+        id: 'commands.stop',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.stop',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Stop Container',
+        },
+    },
+];
+
+/**
+ * Virtual machine control state mappings
+ */
+export const VM_CONTROL_STATES: StateMapping[] = [
+    {
+        id: 'commands.start',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.start',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Start VM',
+        },
+    },
+    {
+        id: 'commands.stop',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.stop',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Stop VM (Graceful)',
+        },
+    },
+    {
+        id: 'commands.forceStop',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.stop',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Force Stop VM',
+        },
+    },
+    {
+        id: 'commands.pause',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.pause',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Pause VM',
+        },
+    },
+    {
+        id: 'commands.resume',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.resume',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Resume VM',
+        },
+    },
+    {
+        id: 'commands.reboot',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.restart',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Reboot VM',
+        },
+    },
+    {
+        id: 'commands.reset',
+        path: [],
+        common: {
+            type: 'boolean',
+            role: 'button.restart',
+            read: true,
+            write: true,
+            def: false,
+            name: 'Reset VM (Force)',
+        },
+    },
+];
