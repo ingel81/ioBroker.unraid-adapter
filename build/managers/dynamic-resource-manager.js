@@ -1,8 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DynamicResourceManager = void 0;
 const data_transformers_1 = require("../utils/data-transformers");
 const unraid_domains_1 = require("../shared/unraid-domains");
+const state_names_json_1 = __importDefault(require("../translations/state-names.json"));
 /**
  * Manages dynamic resource detection and state creation
  * for CPU cores, array disks, Docker containers, shares, and VMs
@@ -520,7 +524,11 @@ class DynamicResourceManager {
         }
         for (const control of unraid_domains_1.DOCKER_CONTROL_STATES) {
             const stateId = `${containerPrefix}.${control.id}`;
-            await this.adapter.setObjectNotExistsAsync(stateId, {
+            // Get translation object or use control.common.name as fallback with prefix
+            const translations = state_names_json_1.default[control.id];
+            const name = translations || `[TRANSLATE] ${control.common.name}`;
+            // Always use setObjectAsync to ensure translations are updated
+            await this.adapter.setObjectAsync(stateId, {
                 type: 'state',
                 common: {
                     type: control.common.type,
@@ -528,7 +536,7 @@ class DynamicResourceManager {
                     read: control.common.read ?? true,
                     write: control.common.write ?? true,
                     def: control.common.def ?? false,
-                    name: control.common.name,
+                    name,
                     desc: control.common.desc,
                     custom: {},
                 },
@@ -555,7 +563,11 @@ class DynamicResourceManager {
         }
         for (const control of unraid_domains_1.VM_CONTROL_STATES) {
             const stateId = `${vmPrefix}.${control.id}`;
-            await this.adapter.setObjectNotExistsAsync(stateId, {
+            // Get translation object or use control.common.name as fallback with prefix
+            const translations = state_names_json_1.default[control.id];
+            const name = translations || `[TRANSLATE] ${control.common.name}`;
+            // Always use setObjectAsync to ensure translations are updated
+            await this.adapter.setObjectAsync(stateId, {
                 type: 'state',
                 common: {
                     type: control.common.type,
@@ -563,7 +575,7 @@ class DynamicResourceManager {
                     read: control.common.read ?? true,
                     write: control.common.write ?? true,
                     def: control.common.def ?? false,
-                    name: control.common.name,
+                    name,
                     desc: control.common.desc,
                     custom: {},
                 },

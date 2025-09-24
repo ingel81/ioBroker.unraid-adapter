@@ -776,7 +776,7 @@ exports.expandSelection = expandSelection;
  */
 exports.DOCKER_CONTROL_STATES = [
     {
-        id: 'controls.start',
+        id: 'commands.start',
         path: [],
         common: {
             type: 'boolean',
@@ -788,7 +788,7 @@ exports.DOCKER_CONTROL_STATES = [
         },
     },
     {
-        id: 'controls.stop',
+        id: 'commands.stop',
         path: [],
         common: {
             type: 'boolean',
@@ -805,7 +805,7 @@ exports.DOCKER_CONTROL_STATES = [
  */
 exports.VM_CONTROL_STATES = [
     {
-        id: 'controls.start',
+        id: 'commands.start',
         path: [],
         common: {
             type: 'boolean',
@@ -817,7 +817,7 @@ exports.VM_CONTROL_STATES = [
         },
     },
     {
-        id: 'controls.stop',
+        id: 'commands.stop',
         path: [],
         common: {
             type: 'boolean',
@@ -829,7 +829,7 @@ exports.VM_CONTROL_STATES = [
         },
     },
     {
-        id: 'controls.forceStop',
+        id: 'commands.forceStop',
         path: [],
         common: {
             type: 'boolean',
@@ -841,7 +841,7 @@ exports.VM_CONTROL_STATES = [
         },
     },
     {
-        id: 'controls.pause',
+        id: 'commands.pause',
         path: [],
         common: {
             type: 'boolean',
@@ -853,7 +853,7 @@ exports.VM_CONTROL_STATES = [
         },
     },
     {
-        id: 'controls.resume',
+        id: 'commands.resume',
         path: [],
         common: {
             type: 'boolean',
@@ -865,7 +865,7 @@ exports.VM_CONTROL_STATES = [
         },
     },
     {
-        id: 'controls.reboot',
+        id: 'commands.reboot',
         path: [],
         common: {
             type: 'boolean',
@@ -877,7 +877,7 @@ exports.VM_CONTROL_STATES = [
         },
     },
     {
-        id: 'controls.reset',
+        id: 'commands.reset',
         path: [],
         common: {
             type: 'boolean',

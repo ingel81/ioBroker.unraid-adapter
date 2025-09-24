@@ -62,8 +62,30 @@ export class StateManager {
         await this.ensureChannelHierarchy(id);
 
         // Get translation object or use id as fallback
-        const translations = (stateTranslations as Record<string, any>)[id];
-        const name: ioBroker.StringOrTranslated = translations || id;
+        let translations = (stateTranslations as Record<string, any>)[id];
+
+        // For dynamic resources, try to get translation for the field name (last part of ID)
+        let fieldName: string | undefined;
+        if (!translations) {
+            const parts = id.split('.');
+            const isDynamicResource =
+                id.startsWith('docker.containers.') ||
+                id.startsWith('vms.') ||
+                id.startsWith('shares.') ||
+                id.startsWith('array.disks.') ||
+                id.startsWith('array.parities.') ||
+                id.startsWith('array.caches.') ||
+                id.startsWith('metrics.cpu.cores.');
+
+            if (isDynamicResource && parts.length > 0) {
+                fieldName = parts[parts.length - 1];
+                translations = (stateTranslations as Record<string, any>)[fieldName];
+            }
+        }
+
+        // If no translation found, use fallback with prefix to indicate missing translation
+        const name: ioBroker.StringOrTranslated = translations ||
+            (fieldName ? `[TRANSLATE] ${fieldName}` : `[TRANSLATE] ${id}`);
 
         // Always update or create the state object to ensure translations are applied
         await this.adapter.setObjectAsync(id, {
@@ -178,9 +200,9 @@ export class StateManager {
         for (let index = 1; index < parts.length; index += 1) {
             const channelId = parts.slice(0, index).join('.');
 
-            // Try to get translation object, otherwise use channelId as fallback
+            // Try to get translation object, otherwise use channelId as fallback with prefix
             const translations = (stateTranslations as Record<string, any>)[channelId];
-            let name: ioBroker.StringOrTranslated = translations || channelId;
+            let name: ioBroker.StringOrTranslated = translations || `[TRANSLATE] ${channelId}`;
 
             // For dynamic resources, use only the resource name as label (no translations)
             if (channelId.startsWith('docker.containers.') && index === 3) {

@@ -11,6 +11,7 @@ import {
     bigIntToNumber,
 } from '../utils/data-transformers';
 import { DOCKER_CONTROL_STATES, VM_CONTROL_STATES } from '../shared/unraid-domains';
+import stateTranslations from '../translations/state-names.json';
 
 /**
  * Manages dynamic resource detection and state creation
@@ -768,7 +769,12 @@ export class DynamicResourceManager {
         for (const control of DOCKER_CONTROL_STATES) {
             const stateId = `${containerPrefix}.${control.id}`;
 
-            await this.adapter.setObjectNotExistsAsync(stateId, {
+            // Get translation object or use control.common.name as fallback with prefix
+            const translations = (stateTranslations as Record<string, any>)[control.id];
+            const name: ioBroker.StringOrTranslated = translations || `[TRANSLATE] ${control.common.name}`;
+
+            // Always use setObjectAsync to ensure translations are updated
+            await this.adapter.setObjectAsync(stateId, {
                 type: 'state',
                 common: {
                     type: control.common.type,
@@ -776,7 +782,7 @@ export class DynamicResourceManager {
                     read: control.common.read ?? true,
                     write: control.common.write ?? true,
                     def: control.common.def ?? false,
-                    name: control.common.name,
+                    name,
                     desc: control.common.desc,
                     custom: {},
                 } as ioBroker.StateCommon,
@@ -807,7 +813,12 @@ export class DynamicResourceManager {
         for (const control of VM_CONTROL_STATES) {
             const stateId = `${vmPrefix}.${control.id}`;
 
-            await this.adapter.setObjectNotExistsAsync(stateId, {
+            // Get translation object or use control.common.name as fallback with prefix
+            const translations = (stateTranslations as Record<string, any>)[control.id];
+            const name: ioBroker.StringOrTranslated = translations || `[TRANSLATE] ${control.common.name}`;
+
+            // Always use setObjectAsync to ensure translations are updated
+            await this.adapter.setObjectAsync(stateId, {
                 type: 'state',
                 common: {
                     type: control.common.type,
@@ -815,7 +826,7 @@ export class DynamicResourceManager {
                     read: control.common.read ?? true,
                     write: control.common.write ?? true,
                     def: control.common.def ?? false,
-                    name: control.common.name,
+                    name,
                     desc: control.common.desc,
                     custom: {},
                 } as ioBroker.StateCommon,

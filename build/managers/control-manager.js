@@ -31,7 +31,7 @@ class ControlManager {
             return;
         }
         // Check if this is a control button
-        if (!id.includes('.controls.')) {
+        if (!id.includes('.commands.')) {
             return;
         }
         this.adapter.log.info(`Processing control action for ${id}`);

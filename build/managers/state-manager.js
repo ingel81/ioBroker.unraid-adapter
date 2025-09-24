@@ -62,8 +62,26 @@ class StateManager {
     async writeState(id, common, value) {
         await this.ensureChannelHierarchy(id);
         // Get translation object or use id as fallback
-        const translations = state_names_json_1.default[id];
-        const name = translations || id;
+        let translations = state_names_json_1.default[id];
+        // For dynamic resources, try to get translation for the field name (last part of ID)
+        let fieldName;
+        if (!translations) {
+            const parts = id.split('.');
+            const isDynamicResource = id.startsWith('docker.containers.') ||
+                id.startsWith('vms.') ||
+                id.startsWith('shares.') ||
+                id.startsWith('array.disks.') ||
+                id.startsWith('array.parities.') ||
+                id.startsWith('array.caches.') ||
+                id.startsWith('metrics.cpu.cores.');
+            if (isDynamicResource && parts.length > 0) {
+                fieldName = parts[parts.length - 1];
+                translations = state_names_json_1.default[fieldName];
+            }
+        }
+        // If no translation found, use fallback with prefix to indicate missing translation
+        const name = translations ||
+            (fieldName ? `[TRANSLATE] ${fieldName}` : `[TRANSLATE] ${id}`);
         // Always update or create the state object to ensure translations are applied
         await this.adapter.setObjectAsync(id, {
             type: 'state',
@@ -162,9 +180,9 @@ class StateManager {
         const parts = id.split('.');
         for (let index = 1; index < parts.length; index += 1) {
             const channelId = parts.slice(0, index).join('.');
-            // Try to get translation object, otherwise use channelId as fallback
+            // Try to get translation object, otherwise use channelId as fallback with prefix
             const translations = state_names_json_1.default[channelId];
-            let name = translations || channelId;
+            let name = translations || `[TRANSLATE] ${channelId}`;
             // For dynamic resources, use only the resource name as label (no translations)
             if (channelId.startsWith('docker.containers.') && index === 3) {
                 // Extract the container name (last part of the channelId)

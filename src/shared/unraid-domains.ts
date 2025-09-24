@@ -907,7 +907,7 @@ export const expandSelection = (selection: Iterable<DomainId>): Set<DomainId> =>
  */
 export const DOCKER_CONTROL_STATES: StateMapping[] = [
     {
-        id: 'controls.start',
+        id: 'commands.start',
         path: [],
         common: {
             type: 'boolean',
@@ -919,7 +919,7 @@ export const DOCKER_CONTROL_STATES: StateMapping[] = [
         },
     },
     {
-        id: 'controls.stop',
+        id: 'commands.stop',
         path: [],
         common: {
             type: 'boolean',
@@ -937,7 +937,7 @@ export const DOCKER_CONTROL_STATES: StateMapping[] = [
  */
 export const VM_CONTROL_STATES: StateMapping[] = [
     {
-        id: 'controls.start',
+        id: 'commands.start',
         path: [],
         common: {
             type: 'boolean',
@@ -949,7 +949,7 @@ export const VM_CONTROL_STATES: StateMapping[] = [
         },
     },
     {
-        id: 'controls.stop',
+        id: 'commands.stop',
         path: [],
         common: {
             type: 'boolean',
@@ -961,7 +961,7 @@ export const VM_CONTROL_STATES: StateMapping[] = [
         },
     },
     {
-        id: 'controls.forceStop',
+        id: 'commands.forceStop',
         path: [],
         common: {
             type: 'boolean',
@@ -973,7 +973,7 @@ export const VM_CONTROL_STATES: StateMapping[] = [
         },
     },
     {
-        id: 'controls.pause',
+        id: 'commands.pause',
         path: [],
         common: {
             type: 'boolean',
@@ -985,7 +985,7 @@ export const VM_CONTROL_STATES: StateMapping[] = [
         },
     },
     {
-        id: 'controls.resume',
+        id: 'commands.resume',
         path: [],
         common: {
             type: 'boolean',
@@ -997,7 +997,7 @@ export const VM_CONTROL_STATES: StateMapping[] = [
         },
     },
     {
-        id: 'controls.reboot',
+        id: 'commands.reboot',
         path: [],
         common: {
             type: 'boolean',
@@ -1009,7 +1009,7 @@ export const VM_CONTROL_STATES: StateMapping[] = [
         },
     },
     {
-        id: 'controls.reset',
+        id: 'commands.reset',
         path: [],
         common: {
             type: 'boolean',

@@ -41,7 +41,7 @@ export class ControlManager {
         }
 
         // Check if this is a control button
-        if (!id.includes('.controls.')) {
+        if (!id.includes('.commands.')) {
             return;
         }
 
