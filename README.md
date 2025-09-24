@@ -88,8 +88,7 @@ The adapter creates a structured tree of objects for the monitored data:
   Placeholder for the next version (at the beginning of the line):
   ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.6.0 (2025-09-24)
 
 - (ingel81) Added VM and Docker container control functionality
 - (ingel81) Code refactoring and cleanup

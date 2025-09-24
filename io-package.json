@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unraid",
-    "version": "0.5.3",
+    "version": "0.6.0",
     "news": {
+      "0.6.0": {
+        "en": "Added VM and Docker container control functionality\nCode refactoring and cleanup\nTranslation",
+        "de": "VM und Docker Container Control Funktionalität hinzugefügt\nCode Refactoring und Reinigung\nÜbersetzung",
+        "ru": "Добавлены функции управления контейнерами VM и Docker\nРефакторинг и очистка кода\nПеревод",
+        "pt": "Adicionada funcionalidade de controle de container VM e Docker\nRefatoração de código e limpeza\nTradução",
+        "nl": "Toegevoegd VM en Docker container controle functionaliteit\nCode refactoring en opruiming\nVertaling",
+        "fr": "Ajout de la fonctionnalité de contrôle des conteneurs VM et Docker\nRefacturation et nettoyage du code\nTraduction",
+        "it": "Aggiunta funzionalità di controllo dei container VM e Docker\nCodici rifattori e pulizia\nTraduzione:",
+        "es": "Función de control de contenedores VM y Docker\nRefactorización y limpieza del código\nTraducción",
+        "pl": "Dodano funkcję sterowania kontenerem VM i Docker\nPrzetwarzanie i czyszczenie kodu\nTłumaczenie",
+        "uk": "Додана функція керування контейнерами VM і Docker\nРефакторинг коду і очищення\nПереклад",
+        "zh-cn": "添加 VM 和 Docker 容器控制功能\n代码重构和清理\n翻译"
+      },
       "0.5.3": {
         "en": "Support for node 20, 22 and 24",
         "de": "Unterstützung für Knoten 20, 22 und 24",
