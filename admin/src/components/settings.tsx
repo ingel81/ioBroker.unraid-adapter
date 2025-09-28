@@ -33,7 +33,7 @@ const styles = (theme: Theme): ReturnType<typeof createStyles> =>
         },
         sectionHeader: {
             marginBottom: 8,
-            color: theme.palette.type === 'dark' ? theme.palette.text.primary : 'inherit',
+            color: theme.palette.text.primary,
         },
         input: {
             marginTop: 0,
@@ -66,7 +66,7 @@ const styles = (theme: Theme): ReturnType<typeof createStyles> =>
             padding: 0,
             backgroundColor: 'transparent',
             cursor: 'pointer',
-            color: theme.palette.type === 'dark' ? '#fff' : 'inherit',
+            color: theme.palette.text.primary,
             '&:hover': {
                 backgroundColor: theme.palette.type === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
             },
@@ -78,7 +78,7 @@ const styles = (theme: Theme): ReturnType<typeof createStyles> =>
         },
         treeLabel: {
             flexGrow: 1,
-            color: theme.palette.type === 'dark' ? theme.palette.text.primary : 'inherit',
+            color: theme.palette.text.primary,
         },
         treeChildren: {
             marginLeft: 28,
@@ -86,7 +86,7 @@ const styles = (theme: Theme): ReturnType<typeof createStyles> =>
         treeDescription: {
             marginLeft: 36,
             marginBottom: 8,
-            color: theme.palette.type === 'dark' ? theme.palette.text.secondary : 'inherit',
+            color: theme.palette.text.secondary,
         },
     });
 
