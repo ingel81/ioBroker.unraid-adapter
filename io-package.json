@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unraid",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "news": {
+      "0.6.1": {
+        "en": "fix: Use themecolors in settings",
+        "de": "fix: Verwenden Sie Themecolors in Einstellungen",
+        "ru": "исправить: Используйте тематические цвета в настройках",
+        "pt": "correção: Use as cores do tema nas configurações",
+        "nl": "fix: Gebruik themakleuren in instellingen",
+        "fr": "correction: Utiliser les couleurs du thème dans les paramètres",
+        "it": "fix: Utilizzare colori a tema nelle impostazioni",
+        "es": "fijación: Use los colores temáticos en la configuración",
+        "pl": "fix: Użyj themecolors w ustawieniach",
+        "uk": "виправити: Використовуйте Themecolors в налаштуваннях",
+        "zh-cn": "固定: 在设置中使用主题颜色"
+      },
       "0.6.0": {
         "en": "Added VM and Docker container control functionality\nCode refactoring and cleanup\nTranslation",
         "de": "VM und Docker Container Control Funktionalität hinzugefügt\nCode Refactoring und Reinigung\nÜbersetzung",
@@ -80,19 +93,6 @@
         "pl": "Dokumentacja",
         "uk": "Документація",
         "zh-cn": "文档"
-      },
-      "0.4.0": {
-        "en": "Adapter renamed to iobroker.unraid",
-        "de": "Adapter umbenannt in iobroker.unraid",
-        "ru": "Адаптер был переименован в iobroker.unraid",
-        "pt": "Adaptador renomeado para iobroker.unraid",
-        "nl": "Adapter hernoemd naar iobroker.unraid",
-        "fr": "Adaptateur renommé en iobroker.unraid",
-        "it": "Adattatore rinominato in iobroker.unraid",
-        "es": "Adaptador renombrado a iobroker.unraid",
-        "pl": "Adapter został przemianowany na iobroker.unraid",
-        "uk": "Адаптер перейменований на iobroker.unraid",
-        "zh-cn": "适配器已更名为iobroker.unraid"
       }
     },
     "titleLang": {
